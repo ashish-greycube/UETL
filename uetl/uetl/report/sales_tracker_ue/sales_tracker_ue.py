@@ -42,15 +42,16 @@ SI.posting_date as invoice_date,
 SI.transporter as transporter_agency,
 SI.irn as awb_no,
 PR.posting_date  as material_receipt_date,
-DATEDIFF(SI.posting_date,SO.po_date) as stock_days,
+DATEDIFF(CURDATE() ,PR.posting_date) as stock_days_for_stock_qty,
+DATEDIFF(SI.posting_date,PR.posting_date) as stock_days_for_sold_qty,
 SO.name as sales_order,
 SO.contact_person as buyer,
 SO_item.business_type_cf as business_type,
-PO_item.name  as purchaser_comment,
-SO_item.name as business_unit,
-SO.sales_partner as sales_tracked_to,
+PO_item.purchaser_comment_cf  as purchaser_comment,
+SO_item.cost_center  as business_unit,
+ST.sales_person as sales_tracked_to,
 SO.customer_group as customer_group ,
-SO.customer as customer_master,
+Cust.industry  as customer_master,
 SO.territory as territory 
 FROM `tabSales Order` SO inner join `tabSales Order Item` SO_item 
 on SO.name=SO_item.parent 
@@ -64,6 +65,10 @@ left outer join `tabSales Invoice` as SI
 on SI.name=SI_item.parent
 left outer join `tabPurchase Receipt` as PR 
 on PR.name=PR_item.parent 
+left outer join `tabCustomer` as Cust
+on SO.customer=Cust.name 
+left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales Team` as ST inner join `tabSales Order` SO on SO.name=ST.parent order by ST.idx ASC limit 1 )
+
 
 """)
 	return data
@@ -267,11 +272,17 @@ def get_columns(filters):
             "width": 140
         },		
         {
-            "label": _("Stock days"),
+            "label": _("Stock days(Stock)"),
             "fieldtype": "Int",
-            "fieldname": "stock_days",
+            "fieldname": "stock_days_for_stock_qty",
             "width": 120
         },	
+        {
+            "label": _("Stock days(Sold)"),
+            "fieldtype": "Int",
+            "fieldname": "stock_days_for_sold_qty",
+            "width": 120
+        },			
         {
             "label": _("Sales Order"),
             "fieldtype": "Link",
@@ -307,7 +318,7 @@ def get_columns(filters):
             "label": _("Sales Tracked To"),
             "fieldtype": "Link",
             "fieldname": "sales_tracked_to",
-            "options": "Sales Partner",
+            "options": "Sales Person",
             "width": 220
         },		
        {
@@ -321,7 +332,7 @@ def get_columns(filters):
             "label": _("Customer Master"),
             "fieldtype": "Link",
             "fieldname": "customer_master",
-            "options": "Customer",
+            "options": "Industry Type",
             "width": 220
         },			
         {
