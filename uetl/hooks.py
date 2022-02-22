@@ -94,7 +94,14 @@ app_license = "MIT"
 # Document Events
 # ---------------
 # Hook on document methods and events
-
+doc_events = {
+	"Sales Order": {
+		"validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
+	},
+	"Purchase Order": {
+		"validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
+	}		
+}
 # doc_events = {
 # 	"*": {
 # 		"on_update": "method",
