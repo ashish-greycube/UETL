@@ -31,9 +31,18 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Unified Product Group",
+   "link_to": "Unified Product Group",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2022-02-22 14:58:10.555096",
+ "modified": "2022-02-22 19:07:20.861261",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "UETL",
