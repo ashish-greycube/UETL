@@ -68,7 +68,7 @@ on PR.name=PR_item.parent  and PR.docstatus=1
 left outer join `tabCustomer` as Cust
 on SO.customer=Cust.name 
 left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales Team` as ST inner join `tabSales Order` SO on SO.name=ST.parent order by ST.idx ASC limit 1 )
-order by SO.name
+order by SO.name,SO_item.item_code
 
 """)
 	return data
