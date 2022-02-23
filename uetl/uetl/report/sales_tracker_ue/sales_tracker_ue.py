@@ -20,7 +20,7 @@ SO_item.external_part_no_cf as external_part_no,
 SO_item.item_name as item_number,
 SO_item.brand as mfr,
 SO_item.qty as cpo_qty, 
-SO_item.qty-PO_item.qty as np_qty,
+PO_item.qty as np_qty,
 SO_item.qty-(SO_item.qty-PO_item.qty)-PR_item.qty  as reserved_order_qty,
 SO_item.qty-(SO_item.qty-PO_item.qty)-(PO_item.qty-PO_item.received_qty)-SO_item.delivered_qty  as reserved_physical_qty,
 SO_item.delivered_qty as sold_qty,
@@ -54,21 +54,21 @@ SO.customer_group as customer_group ,
 Cust.industry  as customer_master,
 SO.territory as territory 
 FROM `tabSales Order` SO inner join `tabSales Order Item` SO_item 
-on SO.name=SO_item.parent 
+on SO.name=SO_item.parent  and SO.docstatus=1
 left outer join `tabPurchase Order Item` PO_item 
-on PO_item.parent =SO.po_no and PO_item.item_code =SO_item.item_code  and PO_item.schedule_date =SO_item.delivery_date 
+on PO_item.item_code =SO_item.item_code  and PO_item.schedule_date =SO_item.delivery_date and PO_item.docstatus=1
 left outer join `tabPurchase Receipt Item` PR_item 
-on PR_item.purchase_order =SO.po_no and PR_item.item_code =SO_item.item_code 
+on PR_item.purchase_order =SO.po_no and PR_item.item_code =SO_item.item_code
 left outer join `tabSales Invoice Item` as SI_item 
 on SI_item.sales_order =SO.name and SI_item.so_detail=SO_item.name 
 left outer join `tabSales Invoice` as SI
-on SI.name=SI_item.parent
+on SI.name=SI_item.parent and SI.docstatus=1
 left outer join `tabPurchase Receipt` as PR 
-on PR.name=PR_item.parent 
+on PR.name=PR_item.parent  and PR.docstatus=1
 left outer join `tabCustomer` as Cust
 on SO.customer=Cust.name 
 left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales Team` as ST inner join `tabSales Order` SO on SO.name=ST.parent order by ST.idx ASC limit 1 )
-
+order by SO.name
 
 """)
 	return data
@@ -86,9 +86,7 @@ def get_columns(filters):
         },
         {
             "label": _("CPO#"),
-            "fieldtype": "Link",
             "fieldname": "cpo_no",
-            "options": "Purchase Order",
             "width": 200
         },
         {
@@ -130,7 +128,7 @@ def get_columns(filters):
             "width": 120
         },	
         {
-            "label": _("NP Qty"),
+            "label": _("On Order (NP)QTY"),
             "fieldtype": "Float",
             "fieldname": "np_qty",
             "width": 120
@@ -175,7 +173,7 @@ def get_columns(filters):
             "width": 120
         },
         {
-            "label": _("NP Amt"),
+            "label": _("On Order (NP)Amt"),
             "fieldtype": "Currency",
             "fieldname": "np_amt",
             "options": "currency",
@@ -210,19 +208,19 @@ def get_columns(filters):
             "width": 220
         },	
         {
-            "label": _("Requested Ship Dt"),
+            "label": _("Requested Ship Dt(CRD)"),
             "fieldtype": "Date",
             "fieldname": "requested_ship_date",
             "width": 140
         },
         {
-            "label": _("Confirmed Ship Dt"),
+            "label": _("Confirmed Ship Dt(EDA)"),
             "fieldtype": "Date",
             "fieldname": "confirmed_ship_date",
             "width": 140
         },
        {
-            "label": _("Special Remarks"),
+            "label": _("Special Remarks(Line Level)"),
             "fieldname": "special_remarks",
             "width": 220
         },	
@@ -272,13 +270,13 @@ def get_columns(filters):
             "width": 140
         },		
         {
-            "label": _("Stock days(Stock)"),
+            "label": _("Stock days(Stock Qty)"),
             "fieldtype": "Int",
             "fieldname": "stock_days_for_stock_qty",
             "width": 120
         },	
         {
-            "label": _("Stock days(Sold)"),
+            "label": _("Stock days(Sold Qty)"),
             "fieldtype": "Int",
             "fieldname": "stock_days_for_sold_qty",
             "width": 120
@@ -291,7 +289,7 @@ def get_columns(filters):
             "width": 220
         },
         {
-            "label": _("Buyer"),
+            "label": _("Customer Buyer"),
             "fieldtype": "Link",
             "fieldname": "buyer",
             "options": "Contact",
@@ -308,7 +306,7 @@ def get_columns(filters):
             "width": 220
         },		
         {
-            "label": _("Business Unit"),
+            "label": _("Business Unit(Sourcing)"),
             "fieldtype": "Link",
             "fieldname": "business_unit",
             "options": "Cost Center",
@@ -329,7 +327,7 @@ def get_columns(filters):
             "width": 220
         },		
        {
-            "label": _("Customer Master"),
+            "label": _("Industry"),
             "fieldtype": "Link",
             "fieldname": "customer_master",
             "options": "Industry Type",
