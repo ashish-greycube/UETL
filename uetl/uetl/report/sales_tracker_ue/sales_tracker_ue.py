@@ -20,16 +20,16 @@ SO_item.external_part_no_cf as external_part_no,
 SO_item.item_name as item_number,
 SO_item.brand as mfr,
 SO_item.qty as cpo_qty, 
-PO_item.qty as np_qty,
-SO_item.qty-(SO_item.qty-PO_item.qty)-PR_item.qty  as reserved_order_qty,
-SO_item.qty-(SO_item.qty-PO_item.qty)-(PO_item.qty-PO_item.received_qty)-SO_item.delivered_qty  as reserved_physical_qty,
+(SO_item.qty-SO_item.ordered_qty) as np_qty,
+SO_item.qty-(SO_item.qty-SO_item.ordered_qty)-PR_item.received_qty  as reserved_order_qty,
+SO_item.qty-(SO_item.qty-SO_item.ordered_qty)-(PO_item.stock_qty - PO_item.received_qty)-SO_item.delivered_qty  as reserved_physical_qty,
 SO_item.delivered_qty as sold_qty,
 SO_item.uom as unit,
 SO_item.rate as unit_price,
 SO_item.amount as net_amt,
-(SO_item.qty-PO_item.qty)*SO_item.rate as np_amt,
-(SO_item.qty-(SO_item.qty-PO_item.qty)-PR_item.qty)*SO_item.rate as reserved_order_amt,
-(SO_item.qty-(SO_item.qty-PO_item.qty)-(PO_item.qty-PO_item.received_qty)-SO_item.delivered_qty)*SO_item.rate  as reserved_physical_amt,
+(SO_item.qty-SO_item.ordered_qty)*SO_item.rate as np_amt,
+(SO_item.qty-(SO_item.qty-SO_item.ordered_qty)-PR_item.received_qty)*SO_item.rate as reserved_order_amt,
+(SO_item.qty-(SO_item.qty-SO_item.ordered_qty)-(PO_item.stock_qty - PO_item.received_qty)-SO_item.delivered_qty)*SO_item.rate  as reserved_physical_amt,
 SO_item.delivered_qty*SO_item.rate as sold_amt,
 SO.currency ,
 SO_item.delivery_date  as requested_ship_date,
@@ -70,7 +70,7 @@ on SO.customer=Cust.name
 left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales Team` as ST inner join `tabSales Order` SO on SO.name=ST.parent order by ST.idx ASC limit 1 )
 order by SO.name,SO_item.item_code
 
-""")
+""",debug=True)
 	return data
 
 
