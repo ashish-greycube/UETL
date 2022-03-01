@@ -9,12 +9,13 @@ def execute(filters=None):
 	return get_columns(filters), get_data(filters)
 
 def get_data(filters=None):
-	data = frappe.db.sql(
+    data_result = frappe.db.sql(
         """SELECT  
+ROW_NUMBER()over(PARTITION by SO.name,PO_item.sales_order,SI_item.sales_order) as row_no,        
 SO.customer as customer,
 SO.po_no as cpo_no,
 SO.po_date as cust_po_date,
-SO.creation as so_created_on,
+DATE(SO.creation) as so_created_on,
 SO_item.cpo_line_no_cf as cpo_line_no,
 SO_item.external_part_no_cf as external_part_no,
 SO_item.item_name as item_number,
@@ -56,7 +57,7 @@ SO.territory as territory
 FROM `tabSales Order` SO inner join `tabSales Order Item` SO_item 
 on SO.name=SO_item.parent  and SO.docstatus=1
 left outer join `tabPurchase Order Item` PO_item 
-on PO_item.item_code =SO_item.item_code  and PO_item.schedule_date =SO_item.delivery_date and PO_item.docstatus=1
+on PO_item.sales_order = SO.name and PO_item.item_code =SO_item.item_code  and PO_item.schedule_date =SO_item.delivery_date and PO_item.docstatus=1
 left outer join `tabPurchase Receipt Item` PR_item 
 on PR_item.purchase_order =SO.po_no and PR_item.item_code =SO_item.item_code
 left outer join `tabSales Invoice Item` as SI_item 
@@ -68,102 +69,122 @@ on PR.name=PR_item.parent  and PR.docstatus=1
 left outer join `tabCustomer` as Cust
 on SO.customer=Cust.name 
 left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales Team` as ST inner join `tabSales Order` SO on SO.name=ST.parent order by ST.idx ASC limit 1 )
-order by SO.name,SO_item.item_code
+order by SO.name,SO_item.item_code,SO_item.cpo_line_no_cf
 
-""",debug=True)
-	return data
+""",debug=True,as_dict=True)
+
+    empty_cols=['customer','cpo_no','cust_po_date','so_created_on','cpo_line_no','external_part_no','item_number','mfr','cpo_qty','np_qty','reserved_order_qty','reserved_physical_qty',
+'sold_qty','unit','unit_price','net_amt','np_amt','reserved_order_amt','reserved_physical_amt','sold_amt','currency','requested_ship_date','special_remarks','invoice_no','invoice_date','transporter_agency', 'awb_no','material_receipt_date','stock_days_for_stock_qty','stock_days_for_sold_qty','sales_order',
+'buyer','business_type','business_unit','sales_tracked_to','customer_group','customer_master','territory']
+
+    new_data_result=[]
+    for data in data_result:
+        if data.row_no > 1:
+            for col in empty_cols:
+                data.update({col:None})
+            new_data_result.append(data)
+        else:
+            new_data_result.append(data)
+
+    return new_data_result
 
 
 
 def get_columns(filters):
     columns = [
         {
+            "label": _("row_n0"),
+            "fieldtype": "Int",
+            "fieldname": "row_no",
+            "width": 40
+        },        
+        {
             "label": _("Customer"),
             "fieldtype": "Link",
             "fieldname": "customer",
             "options": "Customer",
-            "width": 200
+            "width": 170
         },
         {
             "label": _("CPO#"),
             "fieldname": "cpo_no",
-            "width": 200
+            "width": 100
         },
         {
             "label": _("Cust PO Dt"),
             "fieldtype": "Date",
             "fieldname": "cust_po_date",
-            "width": 140
+            "width": 110
         },
         {
             "label": _("SO Created On"),
             "fieldtype": "Date",
             "fieldname": "so_created_on",
-            "width": 140
+            "width": 120
         },	
         {
             "label": _("CPO Line #"),
             "fieldname": "cpo_line_no",
-            "width": 220
+            "width": 100
         },
         {
             "label": _("External Part #"),
             "fieldname": "external_part_no",
-            "width": 220
+            "width": 130
         },		
        {
             "label": _("Item #"),
             "fieldname": "item_number",
-            "width": 220
+            "width": 110
         },	
        {
             "label": _("MFR"),
             "fieldname": "mfr",
-            "width": 220
+            "width": 60
         },
         {
             "label": _("CPO Qty"),
             "fieldtype": "Float",
             "fieldname": "cpo_qty",
-            "width": 120
+            "width": 100
         },	
         {
             "label": _("On Order (NP)QTY"),
             "fieldtype": "Float",
             "fieldname": "np_qty",
-            "width": 120
+            "width": 140
         },		
         {
             "label": _("Reserved Order Qty"),
             "fieldtype": "Float",
             "fieldname": "reserved_order_qty",
-            "width": 120
+            "width": 160
         },
         {
             "label": _("Reserved Physical Qty"),
             "fieldtype": "Float",
             "fieldname": "reserved_physical_qty",
-            "width": 120
+            "width": 170
         },
         {
             "label": _("Sold Qty"),
             "fieldtype": "Float",
             "fieldname": "sold_qty",
-            "width": 120
+            "width": 100
         },																			
         {
             "label": _("Unit"),
             "fieldtype": "Link",
             "fieldname": "unit",
             "options": "UOM",
-            "width": 220
+            "width": 60
         },
         {
             "label": _("Unit Price"),
             "fieldtype": "Currency",
             "fieldname": "unit_price",
             "options": "currency",
-            "width": 120
+            "width": 100
         },		
         {
             "label": _("Net Amt"),
@@ -177,21 +198,21 @@ def get_columns(filters):
             "fieldtype": "Currency",
             "fieldname": "np_amt",
             "options": "currency",
-            "width": 120
+            "width": 140
         },
         {
             "label": _("Reserved Order Amt"),
             "fieldtype": "Currency",
             "fieldname": "reserved_order_amt",
             "options": "currency",
-            "width": 120
+            "width": 160
         },
         {
             "label": _("Reserved Physical Amt"),
             "fieldtype": "Currency",
             "fieldname": "reserved_physical_amt",
             "options": "currency",
-            "width": 120
+            "width": 180
         },		
         {
             "label": _("Sold Amt"),
@@ -205,140 +226,140 @@ def get_columns(filters):
             "fieldtype": "Link",
             "fieldname": "currency",
             "options": "Currency",
-            "width": 220
+            "width": 100
         },	
         {
             "label": _("Requested Ship Dt(CRD)"),
             "fieldtype": "Date",
             "fieldname": "requested_ship_date",
-            "width": 140
+            "width": 180
         },
         {
             "label": _("Confirmed Ship Dt(EDA)"),
             "fieldtype": "Date",
             "fieldname": "confirmed_ship_date",
-            "width": 140
+            "width": 180
         },
        {
             "label": _("Special Remarks(Line Level)"),
             "fieldname": "special_remarks",
-            "width": 220
+            "width": 200
         },	
         {
             "label": _("Sourcing"),
             "fieldtype": "Link",
             "fieldname": "sourcing",
             "options": "Cost Center",
-            "width": 220
+            "width": 100
         },		
         {
             "label": _("Purchaser"),
             "fieldtype": "Link",
             "fieldname": "purchaser",
             "options": "User",
-            "width": 220
+            "width": 150
         },	
         {
             "label": _("Invoice #"),
             "fieldtype": "Link",
             "fieldname": "invoice_no",
             "options": "Sales Invoice",
-            "width": 220
+            "width": 120
         },	
         {
             "label": _("Invoice Dt"),
             "fieldtype": "Date",
             "fieldname": "invoice_date",
-            "width": 140
+            "width": 100
         },		
         {
             "label": _("Transporter Agency"),
             "fieldtype": "Link",
             "fieldname": "transporter_agency",
             "options": "Supplier",
-            "width": 220
+            "width": 200
         },		
        {
             "label": _("AWB #"),
             "fieldname": "awb_no",
-            "width": 220
+            "width": 120
         },	
         {
             "label": _("Material Receipt Dt"),
             "fieldtype": "Date",
             "fieldname": "material_receipt_date",
-            "width": 140
+            "width": 150
         },		
         {
             "label": _("Stock days(Stock Qty)"),
             "fieldtype": "Int",
             "fieldname": "stock_days_for_stock_qty",
-            "width": 120
+            "width": 180
         },	
         {
             "label": _("Stock days(Sold Qty)"),
             "fieldtype": "Int",
             "fieldname": "stock_days_for_sold_qty",
-            "width": 120
+            "width": 160
         },			
         {
             "label": _("Sales Order"),
             "fieldtype": "Link",
             "fieldname": "sales_order",
             "options": "Sales Order",
-            "width": 220
+            "width": 170
         },
         {
             "label": _("Customer Buyer"),
             "fieldtype": "Link",
             "fieldname": "buyer",
             "options": "Contact",
-            "width": 220
+            "width": 130
         },	
        {
             "label": _("Business Type"),
             "fieldname": "business_type",
-            "width": 220
+            "width": 110
         },	
        {
             "label": _("Purchaser Comment"),
             "fieldname": "purchaser_comment",
-            "width": 220
+            "width": 180
         },		
         {
             "label": _("Business Unit(Sourcing)"),
             "fieldtype": "Link",
             "fieldname": "business_unit",
             "options": "Cost Center",
-            "width": 220
+            "width": 170
         },		
        {
             "label": _("Sales Tracked To"),
             "fieldtype": "Link",
             "fieldname": "sales_tracked_to",
             "options": "Sales Person",
-            "width": 220
+            "width": 130
         },		
        {
             "label": _("Customer Group"),
             "fieldtype": "Link",
             "fieldname": "customer_group",
             "options": "Customer Group",
-            "width": 220
+            "width": 130
         },		
        {
             "label": _("Industry"),
             "fieldtype": "Link",
             "fieldname": "customer_master",
             "options": "Industry Type",
-            "width": 220
+            "width": 90
         },			
         {
             "label": _("Territory"),
             "fieldtype": "Link",
             "fieldname": "territory",
             "options": "Territory",
-            "width": 220
+            "width": 90
         }																								
     ]
 
