@@ -243,6 +243,31 @@
  ],
  "custom_perms": [],
  "doctype": "Purchase Order Item",
- "property_setters": [],
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2022-03-01 10:02:24.505240",
+   "default_value": null,
+   "doc_type": "Purchase Order Item",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "cost_center",
+   "idx": 0,
+   "modified": "2022-03-01 10:02:24.505240",
+   "modified_by": "Administrator",
+   "name": "Purchase Order Item-cost_center-reqd",
+   "owner": "Administrator",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "reqd",
+   "property_type": "Check",
+   "row_name": null,
+   "value": "1"
+  }
+ ],
  "sync_on_migrate": 1
 }
