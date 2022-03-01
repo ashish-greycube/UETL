@@ -72,21 +72,21 @@ left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales
 order by SO.name,SO_item.item_code,SO_item.cpo_line_no_cf
 
 """,debug=True,as_dict=True)
-
-    empty_cols=['customer','cpo_no','cust_po_date','so_created_on','cpo_line_no','external_part_no','item_number','mfr','cpo_qty','np_qty','reserved_order_qty','reserved_physical_qty',
+# 'cpo_qty'
+    empty_cols=['customer','cpo_no','cust_po_date','so_created_on','cpo_line_no','external_part_no','item_number','mfr','np_qty','reserved_order_qty','reserved_physical_qty',
 'sold_qty','unit','unit_price','net_amt','np_amt','reserved_order_amt','reserved_physical_amt','sold_amt','currency','requested_ship_date','special_remarks','invoice_no','invoice_date','transporter_agency', 'awb_no','material_receipt_date','stock_days_for_stock_qty','stock_days_for_sold_qty','sales_order',
 'buyer','business_type','business_unit','sales_tracked_to','customer_group','customer_master','territory']
 
-    new_data_result=[]
-    for data in data_result:
-        if data.row_no > 1:
-            for col in empty_cols:
-                data.update({col:None})
-            new_data_result.append(data)
-        else:
-            new_data_result.append(data)
+    # new_data_result=[]
+    # for data in data_result:
+    #     if data.row_no > 1:
+    #         for col in empty_cols:
+    #             data.update({col:None})
+    #         new_data_result.append(data)
+    #     else:
+    #         new_data_result.append(data)
 
-    return new_data_result
+    return data_result
 
 
 
