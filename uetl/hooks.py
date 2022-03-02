@@ -99,7 +99,9 @@ doc_events = {
 		"validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
 	},
 	"Purchase Order": {
-		"validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
+		"validate": ["uetl.doc_events.validate_for_duplicate_items_based_on_date",
+		"uetl.doc_events.validate_so_reference_in_item"
+		]
 	},
 	"Delivery Note": {
 		"validate": "uetl.doc_events.set_cost_center_based_on_sales_order"

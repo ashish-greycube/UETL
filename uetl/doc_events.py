@@ -16,6 +16,10 @@ def validate_for_duplicate_items_based_on_date(self,method):
             chk_dupl_itm.append({"item_code":d.item_code,"date":d.get(date_field)})	
 
 
+def validate_so_reference_in_item(self,method):
+    for item in self.items:
+        if not item.sales_order_item:
+            frappe.throw(_("Sales order reference is missing for <b> row {0} : Item {0}</b>").format(item.idex,item.item_code))
 
 def set_cost_center_based_on_sales_order(self,method):
     for item in self.items:
