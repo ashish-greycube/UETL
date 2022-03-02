@@ -11,7 +11,9 @@ def execute(filters=None):
 def get_data(filters=None):
     data_result = frappe.db.sql(
         """SELECT  
-ROW_NUMBER()over(PARTITION by SO.name,PO_item.sales_order,SI_item.sales_order) as row_no,        
+ROW_NUMBER()over(PARTITION by SO.name,PO_item.sales_order,SI_item.sales_order 
+                 order by SO.name,SO_item.item_code,SO_item.cpo_line_no_cf,PO_item.expected_delivery_date ,PO_item.parent
+       ) as row_no,        
 SO.customer as customer,
 SO.po_no as cpo_no,
 SO.po_date as cust_po_date,
@@ -69,24 +71,21 @@ on PR.name=PR_item.parent  and PR.docstatus=1
 left outer join `tabCustomer` as Cust
 on SO.customer=Cust.name 
 left outer join `tabSales Team` as ST on ST.name =(select ST.name from `tabSales Team` as ST inner join `tabSales Order` SO on SO.name=ST.parent order by ST.idx ASC limit 1 )
-order by SO.name,SO_item.item_code,SO_item.cpo_line_no_cf
+order by SO.name,SO_item.item_code,SO_item.cpo_line_no_cf,PO_item.expected_delivery_date ,PO_item.parent
 
 """,debug=True,as_dict=True)
-# 'cpo_qty'
+
     empty_cols=['customer','cpo_no','cust_po_date','so_created_on','cpo_line_no','external_part_no','item_number','mfr','np_qty','reserved_order_qty','reserved_physical_qty',
 'sold_qty','unit','unit_price','net_amt','np_amt','reserved_order_amt','reserved_physical_amt','sold_amt','currency','requested_ship_date','special_remarks','invoice_no','invoice_date','transporter_agency', 'awb_no','material_receipt_date','stock_days_for_stock_qty','stock_days_for_sold_qty','sales_order',
 'buyer','business_type','business_unit','sales_tracked_to','customer_group','customer_master','territory']
 
-    # new_data_result=[]
-    # for data in data_result:
-    #     if data.row_no > 1:
-    #         for col in empty_cols:
-    #             data.update({col:None})
-    #         new_data_result.append(data)
-    #     else:
-    #         new_data_result.append(data)
-
-    return data_result
+    new_data_result=[]
+    for data in data_result:
+        if data.row_no > 1 :
+            new_data_result.append({'confirmed_ship_date':data.confirmed_ship_date,'sourcing':data.sourcing,'purchaser':data.purchaser,'purchaser_comment':data.purchaser_comment})
+        else:
+            new_data_result.append(data)
+    return new_data_result
 
 
 
