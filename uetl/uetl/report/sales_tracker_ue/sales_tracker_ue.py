@@ -79,13 +79,13 @@ order by SO.name,SO_item.item_code,SO_item.cpo_line_no_cf,PO_item.expected_deliv
 'sold_qty','unit','unit_price','net_amt','np_amt','reserved_order_amt','reserved_physical_amt','sold_amt','currency','requested_ship_date','special_remarks','invoice_no','invoice_date','transporter_agency', 'awb_no','material_receipt_date','stock_days_for_stock_qty','stock_days_for_sold_qty','sales_order',
 'buyer','business_type','business_unit','sales_tracked_to','customer_group','customer_master','territory']
 
-    new_data_result=[]
-    for data in data_result:
-        if data.row_no > 1 :
-            new_data_result.append({'confirmed_ship_date':data.confirmed_ship_date,'sourcing':data.sourcing,'purchaser':data.purchaser,'purchaser_comment':data.purchaser_comment})
-        else:
-            new_data_result.append(data)
-    return new_data_result
+    # new_data_result=[]
+    # for data in data_result:
+    #     if data.row_no > 1 :
+    #         new_data_result.append({'confirmed_ship_date':data.confirmed_ship_date,'sourcing':data.sourcing,'purchaser':data.purchaser,'purchaser_comment':data.purchaser_comment})
+    #     else:
+    #         new_data_result.append(data)
+    return data_result
 
 
 

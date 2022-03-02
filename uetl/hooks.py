@@ -100,7 +100,10 @@ doc_events = {
 	},
 	"Purchase Order": {
 		"validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
-	}		
+	},
+	"Delivery Note": {
+		"validate": "uetl.doc_events.set_cost_center_based_on_sales_order"
+	}			
 }
 # doc_events = {
 # 	"*": {
