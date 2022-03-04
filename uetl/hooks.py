@@ -31,7 +31,9 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"Sales Order" : "public/js/filter_cost_center.js",	
+	}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -105,7 +107,13 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"validate": "uetl.doc_events.set_cost_center_based_on_sales_order"
-	}			
+	},
+	"Purchase Receipt": {
+		"after_insert":"uetl.doc_events.set_sales_order_reference"
+	},
+	"Batch": {
+		"after_insert":"uetl.doc_events.set_sales_order_reference"
+	}				
 }
 # doc_events = {
 # 	"*": {

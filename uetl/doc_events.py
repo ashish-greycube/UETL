@@ -24,4 +24,26 @@ def validate_so_reference_in_item(self,method):
 def set_cost_center_based_on_sales_order(self,method):
     for item in self.items:
         if not item.cost_center and item.so_detail:
-            item.cost_center= frappe.db.get_value('Sales Order Item', item.so_detail, 'cost_center')           
+            item.cost_center= frappe.db.get_value('Sales Order Item', item.so_detail, 'cost_center')   
+
+def set_sales_order_reference(self,method):
+    if self.doctype=='Purchase Receipt':
+        for item in self.items:
+            if item.purchase_order and item.purchase_order_item:
+                sales_order, sales_order_item = frappe.db.get_value('Purchase Order Item', item.purchase_order_item, ['sales_order', 'sales_order_item'])   
+                frappe.db.set_value(item.doctype, item.name, {
+                    'sales_order_cf': sales_order,
+                    'sales_order_item_cf': sales_order_item
+                })
+
+    if self.doctype=='Batch': 
+        if self.reference_doctype=='Purchase Receipt' and self.reference_name:
+            pr_item_name=frappe.db.get_all('Purchase Receipt Item', filters={'item_code': ['=', self.item], 'batch_no': ['=', self.name],
+                                                                            'parent':self.reference_name},pluck='name')
+            if len(pr_item_name)>0:
+                pr_item_name=pr_item_name[0]
+                sales_order, sales_order_item = frappe.db.get_value('Purchase Receipt Item',pr_item_name, ['sales_order_cf', 'sales_order_item_cf'])
+                frappe.db.set_value(self.doctype, self.name, {
+                    'sales_order_cf': sales_order,
+                    'sales_order_item_cf': sales_order_item
+                })                
