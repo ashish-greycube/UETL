@@ -52,7 +52,7 @@ def get_data(filters=None):
             tpri.batch_no 'pr_item_batch_no', 
             tsii.batch_no 'si_item_batch_no',
             DATEDIFF(NOW(),tpr.posting_date) stock_days_for_stock_qty,
-            DATEDIFF(tsi.posting_date,tpr.posting_date) stock_days_for_sold,
+            DATEDIFF(tsi.posting_date,tpr.posting_date) stock_days_for_sold_qty,
             tso.name sales_order ,
             tso.contact_display customer_buyer ,
             tsoi.business_type_cf business_type ,
