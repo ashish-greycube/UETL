@@ -20,8 +20,8 @@ def get_data(filters=None):
             -- tso.po_date  customer_po_date, 
             DATE_FORMAT(tso.po_date,'%d/%m/%Y')  customer_po_date, 
             DATE_FORMAT(tso.creation,'%d/%m/%Y %H:%i') so_creation,
-            tsoi.cpo_line_no_cf 'CPO Line No', 
-            tsoi.external_part_no_cf 'External Part No', 
+            tsoi.cpo_line_no_cf as cpo_line_no_cf,
+            tsoi.external_part_no_cf as external_part_no_cf,
             tsoi.item_name item_number, 
             tsoi.brand mfr, 
             tsoi.stock_qty cpo_qty,
@@ -51,7 +51,7 @@ def get_data(filters=None):
             tpr.posting_date  as material_receipt_date ,
             tpri.batch_no 'pr_item_batch_no', 
             tsii.batch_no 'si_item_batch_no',
-            DATEDIFF(NOW(),tpr.posting_date) stock_days_for_stock_qty,
+            CASE tb.batch_qty WHEN 0 THEN 0 ELSE DATEDIFF(NOW(),tpr.posting_date) END as stock_days_for_stock_qty,
             DATEDIFF(tsi.posting_date,tpr.posting_date) stock_days_for_sold_qty,
             tso.name sales_order ,
             tso.contact_display customer_buyer ,
@@ -60,7 +60,7 @@ def get_data(filters=None):
             tsoi.cost_center business_unit ,
             tst.sales_person sales_tracker_to ,
             tc.customer_group customer_group ,
-            tc.industry industry ,
+            tc.industry industry,
             tso.territory territory 
             -- '~',
             -- tsoi.parent 'so', tsoi.name 'soi name', 
@@ -85,15 +85,15 @@ def get_data(filters=None):
             and tpri.purchase_order_item = tpoi.name 
         left outer join `tabPurchase Receipt` tpr on tpr.name =tpri.parent 	
         left outer join `tabSales Invoice Item` tsii on tsii.sales_order = tsoi.parent 
-            and tsii.so_detail = tsoi.name and tsii.batch_no = tpri.batch_no 
+            and tsii.so_detail = tsoi.name and tsii.batch_no = tpri.batch_no
+        left outer join `tabBatch` tb  on tpri.batch_no  = tb.name
         left outer join `tabSales Invoice` tsi on tsi.name = tsii.parent 
-        left outer join tabCustomer tc on tc.name = tsi.customer 
+        left outer join tabCustomer tc on tc.name = tso.customer
         left outer join (
             select parent, sales_person  from `tabSales Team` tst 
             group by parent
-        ) tst on tst.parent = tsoi.parent
-        WHERE 
-            tso.name = 'SAL-ORD-2022-00011'
+        ) tst on tst.parent = tso.name
+        -- WHERE tso.name = 'SAL-ORD-2022-00011'
         order by 
             tsoi.idx, tpri.item_code, tsii.item_code , tpri.batch_no , tsii.batch_no  
         """,
@@ -195,7 +195,7 @@ def get_columns(filters):
         {
             "label": _("Reserved Order Amt"),
             "fieldtype": "Currency",
-            "fieldname": "reserved_order_amt",
+            "fieldname": "reserved_order_amount",
             "options": "currency",
             "width": 160,
         },
@@ -209,7 +209,7 @@ def get_columns(filters):
         {
             "label": _("Sold Amt"),
             "fieldtype": "Currency",
-            "fieldname": "sold_amt",
+            "fieldname": "sold_amount",
             "options": "currency",
             "width": 120,
         },
@@ -334,8 +334,7 @@ def get_columns(filters):
         {
             "label": _("Industry"),
             "fieldtype": "Link",
-            "fieldname": "customer_master",
-            "options": "industry",
+            "fieldname": "industry",
             "width": 90,
         },
         {
