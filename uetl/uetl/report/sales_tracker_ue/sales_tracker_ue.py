@@ -333,7 +333,6 @@ def get_columns(filters):
         },
         {
             "label": _("Industry"),
-            "fieldtype": "Link",
             "fieldname": "industry",
             "width": 90,
         },
