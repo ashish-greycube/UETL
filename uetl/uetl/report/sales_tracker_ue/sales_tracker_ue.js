@@ -4,6 +4,12 @@
 
 frappe.query_reports["Sales Tracker UE"] = {
 	"filters": [
+		{
+			label: "Display Grouped",
+			fieldname: "hide_group_fields",
+			fieldtype: "Check",
+			default: 1,
+		}
 
 	],
 
@@ -11,9 +17,9 @@ frappe.query_reports["Sales Tracker UE"] = {
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
 
-		if (column.fieldname == "customer_name") {
+		if (value && column.fieldname == "customer_name") {
 			value = `<a href="/app/customer/${data['customer']}" data-doctype="Customer">${data['customer_name']}</a>`;
 		}
-		return value;
+		return value || '';
 	},
 };

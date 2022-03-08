@@ -3,6 +3,8 @@
 
 import frappe
 from frappe import _
+from itertools import groupby
+from frappe.utils import cstr, cint
 
 
 def execute(filters=None):
@@ -49,8 +51,8 @@ def get_data(filters=None):
             tsi.transporter as transporter_agency,
             tsi.lr_no as awb_no,
             tpr.posting_date  as material_receipt_date ,
-            tpri.batch_no 'pr_item_batch_no', 
-            tsii.batch_no 'si_item_batch_no',
+            tpri.batch_no pr_item_batch_no, 
+            tsii.batch_no si_item_batch_no,
             CASE tb.batch_qty WHEN 0 THEN 0 ELSE DATEDIFF(NOW(),tpr.posting_date) END as stock_days_for_stock_qty,
             DATEDIFF(tsi.posting_date,tpr.posting_date) stock_days_for_sold_qty,
             tso.name sales_order ,
@@ -95,13 +97,42 @@ def get_data(filters=None):
         ) tst on tst.parent = tso.name
         -- WHERE tso.name = 'SAL-ORD-2022-00011'
         order by 
-            tsoi.idx, tpri.item_code, tsii.item_code , tpri.batch_no , tsii.batch_no  
+            tso.name, tsoi.idx, tpri.item_code, tsii.item_code , tpri.batch_no , tsii.batch_no  
         """,
         as_dict=True,
         # debug=True,
     )
 
-    return data
+    if not data:
+        return []
+
+    if not cint(filters.get("hide_group_fields")):
+        return data
+
+    show_in_group_fields = [
+        "confirmed_ship_date",
+        "sourcing",
+        "purchaser",
+        "invoice_no",
+        "invoice_date",
+        "si_qty",
+        "transporter_agency",
+        "awb_no",
+        "material_receipt_date",
+        "pr_item_batch_no",
+        "si_item_batch_no",
+        "stock_days_for_stock_qty",
+        "stock_days_for_sold_qty",
+    ]
+
+    out = []
+    for key, group in groupby(data, lambda x: x["sales_order"]):
+        items = list(group)
+        out.append(items[0])
+        for d in items[1:]:
+            out.append({x: d[x] for x in d if x in show_in_group_fields})
+
+    return out
 
 
 def get_columns(filters):
