@@ -5,7 +5,7 @@
 frappe.query_reports["Sales Tracker UE"] = {
 	"filters": [
 		{
-			label: "Display Grouped",
+			label: "Show Summary",
 			fieldname: "hide_group_fields",
 			fieldtype: "Check",
 			default: 1,
