@@ -44,17 +44,17 @@ def get_data(filters=None):
             DATE_FORMAT(tpoi.expected_delivery_date,'%d-%b-%Y') confirmed_ship_date ,
             tsoi.special_remarks_cf as special_remarks,
             tpoi.cost_center  as sourcing,
-            tpo.owner as purchaser,
+            tpoi.owner as purchaser,
             tsii.parent as invoice_no,
-            DATE_FORMAT(tsi.posting_date, '%d-%b-%Y') as invoice_date,
+            DATE_FORMAT(tsii.posting_date, '%d-%b-%Y') as invoice_date,
             tsii.stock_qty as si_qty,
-            tsi.transporter as transporter_agency,
-            tsi.lr_no as awb_no,
-            tpr.posting_date  as material_receipt_date ,
+            tsii.transporter as transporter_agency,
+            tsii.lr_no as awb_no,
+            tpri.posting_date  as material_receipt_date ,
             tpri.batch_no pr_item_batch_no, 
             tsii.batch_no si_item_batch_no,
-            CASE tb.batch_qty WHEN 0 THEN 0 ELSE DATEDIFF(NOW(),tpr.posting_date) END as stock_days_for_stock_qty,
-            DATEDIFF(tsi.posting_date,tpr.posting_date) stock_days_for_sold_qty,
+            CASE tb.batch_qty WHEN 0 THEN 0 ELSE DATEDIFF(NOW(),tpri.posting_date) END as stock_days_for_stock_qty,
+            DATEDIFF(tsii.posting_date,tpri.posting_date) stock_days_for_sold_qty,
             tso.name sales_order ,
             tso.contact_display customer_buyer ,
             tsoi.business_type_cf business_type ,
@@ -75,27 +75,47 @@ def get_data(filters=None):
             -- tso.creation so_creation,
             -- tpoi.parent 'po', tpoi.name 'poi name',
             -- tsii.parent 'si', tsii.name 'sii name',
-            -- tpr.posting_date 'tpr_posting_date', tpri.batch_no 'tpri_batch_no', tpri.item_code 'tpri_item_code',
-            -- tsi.posting_date 'tsi_posting_date', tsii.batch_no 'tsii_batch_no', tsii.item_code 'tsii_item_code'
+            -- tpri.posting_date 'tpr_posting_date', tpri.batch_no 'tpri_batch_no', tpri.item_code 'tpri_item_code',
+            -- tsii.posting_date 'tsi_posting_date', tsii.batch_no 'tsii_batch_no', tsii.item_code 'tsii_item_code'
         from 
             `tabSales Order` tso
-        inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name
-        left outer join `tabPurchase Order Item` tpoi on tpoi.sales_order = tsoi.parent 
+        inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name 
+        left outer join (
+            select 
+                tpoi.parent, tpoi.name, 
+                tpo.owner, tpoi.sales_order, tpoi.sales_order_item, tpoi.received_qty, 
+                tpoi.stock_qty, tpoi.expected_delivery_date, tpoi.cost_center, tpoi.purchaser_comment_cf
+                from  `tabPurchase Order` tpo
+                inner join `tabPurchase Order Item` tpoi on tpoi.parent = tpo.name
+                where tpo.docstatus = 1
+        ) tpoi on tpoi.sales_order = tsoi.parent 
             and tpoi.sales_order_item = tsoi.name 
-        left outer join `tabPurchase Order` tpo on tpo.name = tpoi.parent 	
-        left outer join `tabPurchase Receipt Item` tpri on tpri.purchase_order = tpoi.parent 
+        left outer join (
+            select 
+                tpri.parent, tpri.name, tpr.posting_date,
+                tpri.purchase_order, tpri.purchase_order_item, tpri.batch_no, tpri.item_code
+            from  `tabPurchase Receipt` tpr 
+            inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
+            where tpr.docstatus = 1
+        ) tpri on tpri.purchase_order = tpoi.parent 
             and tpri.purchase_order_item = tpoi.name 
-        left outer join `tabPurchase Receipt` tpr on tpr.name =tpri.parent 	
-        left outer join `tabSales Invoice Item` tsii on tsii.sales_order = tsoi.parent 
-            and tsii.so_detail = tsoi.name and tsii.batch_no = tpri.batch_no
         left outer join `tabBatch` tb  on tpri.batch_no  = tb.name
-        left outer join `tabSales Invoice` tsi on tsi.name = tsii.parent 
+        left outer join (
+            select 
+                tsii.parent, tsii.name, tsi.posting_date, tsi.transporter,
+                tsii.sales_order, tsii.so_detail, tsii.batch_no, tsii.item_code, tsii.stock_qty, tsi.lr_no
+            from  `tabSales Invoice` tsi 
+            inner join  `tabSales Invoice Item` tsii on tsii.parent = tsi.name
+            where tsi.docstatus = 1
+        ) tsii on tsii.sales_order = tsoi.parent 
+            and tsii.so_detail = tsoi.name and tsii.batch_no = tpri.batch_no
         left outer join tabCustomer tc on tc.name = tso.customer
         left outer join (
             select parent, sales_person  from `tabSales Team` tst 
             group by parent
         ) tst on tst.parent = tso.name
-        -- WHERE tso.name = 'SAL-ORD-2022-00011'
+        WHERE 
+            tso.docstatus = 1 -- and tso.name = 'SAL-ORD-2022-00011'
         order by 
             tso.name, tsoi.idx, tpri.item_code, tsii.item_code , tpri.batch_no , tsii.batch_no  
         """,
