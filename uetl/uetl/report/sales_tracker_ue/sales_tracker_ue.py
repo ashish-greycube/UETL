@@ -80,6 +80,7 @@ def get_data(filters=None):
         from 
             `tabSales Order` tso
         inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name 
+        inner join tabItem ti on ti.name = tsoi.item_code and ti.is_stock_item = 0
         left outer join (
             select 
                 tpoi.parent, tpoi.name, 
