@@ -19,12 +19,19 @@ def validate_for_duplicate_items_based_on_date(self,method):
 def validate_so_reference_in_item(self,method):
     for item in self.items:
         if not item.sales_order_item:
-            frappe.throw(_("Sales order reference is missing for <b> row {0} : Item {0}</b>").format(item.idex,item.item_code))
+            frappe.throw(_("Sales order reference is missing for <b> row {0} : Item {1}</b>").format(item.idx,item.item_code))
 
 def set_cost_center_based_on_sales_order(self,method):
     for item in self.items:
         if not item.cost_center and item.so_detail:
             item.cost_center= frappe.db.get_value('Sales Order Item', item.so_detail, 'cost_center')   
+
+def update_gst_hsn_code_cf_based_on_batch_no(self,method):
+    for item in self.items:
+        print('-'*10,'update_gst_hsn_code_cf_based_on_batch_no','item.batch_no',item.batch_no)
+        if item.batch_no:
+            item.gst_hsn_code=frappe.db.get_value('Batch',item.batch_no,'gst_hsn_code_cf')
+            frappe.msgprint(_("HSN/SAC Code {0} is updated for <b> row {1} : Item {2}</b>").format(item.gst_hsn_code,item.idx,item.item_code),alert=1)
 
 def set_sales_order_reference(self,method):
     if self.doctype=='Purchase Receipt':
@@ -47,3 +54,14 @@ def set_sales_order_reference(self,method):
                     'sales_order_cf': sales_order,
                     'sales_order_item_cf': sales_order_item
                 })                
+
+def update_batch_for_hsn_code(self,method):
+    for item in self.items:
+        print('-'*10,'update_batch_for_hsn_code','item.batch_no',item.batch_no)
+        if item.batch_no:
+            batch_no=frappe.get_doc('Batch',item.batch_no)
+            batch_no.date_code_cf=item.date_code_cf
+            batch_no.country_of_origin_cf=item.country_of_origin_cf
+            batch_no.gst_hsn_code_cf=item.gst_hsn_code
+            batch_no.save(ignore_permissions=True)
+            frappe.msgprint(_("Batch no <b>{0}</b> is updated for <b> row {1} : Item {2}</b>").format(item.batch_no,item.idx,item.item_code),alert=1)

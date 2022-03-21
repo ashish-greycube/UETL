@@ -102,14 +102,16 @@ doc_events = {
 	},
 	"Purchase Order": {
 		"validate": ["uetl.doc_events.validate_for_duplicate_items_based_on_date",
-		"uetl.doc_events.validate_so_reference_in_item"
-		]
+		"uetl.doc_events.validate_so_reference_in_item"	]		
 	},
 	"Delivery Note": {
-		"validate": "uetl.doc_events.set_cost_center_based_on_sales_order"
+		"validate": ["uetl.doc_events.set_cost_center_based_on_sales_order",
+		"uetl.doc_events.update_gst_hsn_code_cf_based_on_batch_no"
+		]
 	},
 	"Purchase Receipt": {
-		"after_insert":"uetl.doc_events.set_sales_order_reference"
+		"after_insert":"uetl.doc_events.set_sales_order_reference",
+		"on_submit":"uetl.doc_events.update_batch_for_hsn_code"
 	},
 	"Batch": {
 		"after_insert":"uetl.doc_events.set_sales_order_reference"
