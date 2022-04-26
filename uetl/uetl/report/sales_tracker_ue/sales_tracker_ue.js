@@ -9,8 +9,14 @@ frappe.query_reports["Sales Tracker UE"] = {
 			fieldname: "hide_group_fields",
 			fieldtype: "Check",
 			default: 1,
+		},
+		{
+			label: "Sales Order Status",
+			fieldname: "so_status",
+			fieldtype: "Select",
+			options: "All\nOpen\nClosed",
+			default: "All",
 		}
-
 	],
 
 

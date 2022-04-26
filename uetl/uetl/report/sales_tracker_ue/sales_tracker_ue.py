@@ -13,6 +13,7 @@ def execute(filters=None):
 
 
 def get_data(filters=None):
+
     data = frappe.db.sql(
         """
         select 
@@ -116,10 +117,12 @@ def get_data(filters=None):
             group by parent
         ) tst on tst.parent = tso.name
         WHERE 
-            tso.docstatus = 1 -- and tso.name = 'SAL-ORD-2022-00011'
+            tso.docstatus = 1 {conditions}
         order by 
             tso.name, tsoi.idx, tpri.item_code, tsii.item_code , tpri.batch_no , tsii.batch_no  
-        """,
+        """.format(
+            conditions=get_conditions(filters)
+        ),
         as_dict=True,
         # debug=True,
     )
@@ -398,3 +401,17 @@ def get_columns(filters):
     ]
 
     return columns
+
+
+def get_conditions(filters):
+    conditions = []
+    # conditions.append(" tso.name = 'SAL-ORD-2022-00011' ")
+
+    if filters.so_status:
+        if filters.so_status == "Open":
+            conditions.append(
+                "tso.status in ('To Deliver','To Deliver and Bill', 'To Bill', 'On Hold')"
+            )
+        elif filters.so_status == "Closed":
+            conditions.append("tso.status in ('Closed', 'Completed')")
+    return conditions and " and " + " and ".join(conditions) or ""
