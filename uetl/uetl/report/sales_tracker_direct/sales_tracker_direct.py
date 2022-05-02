@@ -63,7 +63,8 @@ select
             tst.sales_person sales_tracker_to ,
             tc.customer_group customer_group ,
             tc.industry industry,
-            tso.territory territory             
+            tso.territory territory ,
+            tcc.parent parent_cost_center , tsp.parent_sales_person
             -- '~',
             -- tsoi.parent 'so', tsoi.name 'soi name', 
             -- tpoi.name 'tpoi name', tpri.name 'tpri name', tsii.name 'tsii name',
@@ -115,6 +116,8 @@ select
             select parent, sales_person  from `tabSales Team` tst 
             group by parent
         ) tst on tst.parent = tso.name
+        left outer JOIN `tabCost Center` tcc on tcc.name = tpoi.cost_center 
+        left outer join `tabSales Person` tsp on tsp.name = tst.sales_person
         WHERE 
             tso.docstatus = 1 {conditions}
         order by 
@@ -299,6 +302,13 @@ def get_columns(filters):
             "width": 100,
         },
         {
+            "label": _("Parent Cost Center"),
+            "fieldtype": "Link",
+            "fieldname": "parent_cost_center",
+            "options": "Cost Center",
+            "width": 100,
+        },
+        {
             "label": _("Purchaser"),
             "fieldtype": "Link",
             "fieldname": "purchaser",
@@ -375,6 +385,13 @@ def get_columns(filters):
             "label": _("Sales Tracked To"),
             "fieldtype": "Link",
             "fieldname": "sales_tracker_to",
+            "options": "Sales Person",
+            "width": 130,
+        },
+        {
+            "label": _("Parent Sales Person"),
+            "fieldtype": "Link",
+            "fieldname": "parent_sales_person",
             "options": "Sales Person",
             "width": 130,
         },
