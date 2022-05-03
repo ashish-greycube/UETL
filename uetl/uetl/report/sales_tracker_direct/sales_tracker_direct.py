@@ -50,11 +50,11 @@ select
             tsii.stock_qty as si_qty,
             tsii.transporter as transporter_agency,
             tsii.lr_no as awb_no,
-            tpri.posting_date  as material_receipt_date ,
+            COALESCE (tb.manufacturing_date , DATE(tb.creation))  as material_receipt_date ,
             tpri.batch_no pr_item_batch_no, 
             tsii.batch_no si_item_batch_no,
-            CASE tb.batch_qty WHEN 0 THEN 0 ELSE DATEDIFF(NOW(),tpri.posting_date) END as stock_days_for_stock_qty,
-            DATEDIFF(tsii.posting_date,tpri.posting_date) stock_days_for_sold_qty,
+            CASE tb.batch_qty WHEN 0 THEN 0 ELSE DATEDIFF(NOW(),COALESCE (tb.manufacturing_date , DATE(tb.creation))) END as stock_days_for_stock_qty,
+            DATEDIFF(tsii.posting_date,COALESCE (tb.manufacturing_date , DATE(tb.creation))) stock_days_for_sold_qty,
             tso.name sales_order ,
             tso.contact_display customer_buyer ,
             tsoi.business_type_cf business_type ,
@@ -76,7 +76,7 @@ select
             -- tso.creation so_creation,
             -- tpoi.parent 'po', tpoi.name 'poi name',
             -- tsii.parent 'si', tsii.name 'sii name',
-            -- tpri.posting_date 'tpr_posting_date', tpri.batch_no 'tpri_batch_no', tpri.item_code 'tpri_item_code',
+            -- COALESCE (tb.manufacturing_date , DATE(tb.creation)) 'tpr_posting_date', tpri.batch_no 'tpri_batch_no', tpri.item_code 'tpri_item_code',
             -- tsii.posting_date 'tsi_posting_date', tsii.batch_no 'tsii_batch_no', tsii.item_code 'tsii_item_code'
         from 
             `tabSales Order` tso
@@ -126,7 +126,7 @@ select
             conditions=get_conditions(filters)
         ),
         as_dict=True,
-        # debug=True,
+        debug=True,
     )
 
     if not data:
