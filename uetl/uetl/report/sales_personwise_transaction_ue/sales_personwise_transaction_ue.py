@@ -116,7 +116,7 @@ def get_columns(filters):
             {'label':'Brand','fieldname':'brand','fieldtype':'Link','options':'Brand','width':'140'},
             {'label':'Qty','fieldname':'stock_qty','fieldtype':'Float','options':'','width':'140'},
             {'label':'Amount','fieldname':'base_net_amount','fieldtype':'Currency','options':'','width':'140'},
-            {'label':'Inv Status','fieldname':'status','fieldtype':'Data','options':'','width':'140'},
+            {'label':'Status','fieldname':'status','fieldtype':'Data','options':'','width':'140'},
             {'label':'Sales Person','fieldname':'sales_person','fieldtype':'Link','options':'Sales Person','width':'140'},
             {'label':'RSM Person','fieldname':'rsm_sales_person','fieldtype':'Data','options':'','width':'140'},
             {'label':'Business Unit (Sales)','fieldname':'bu_sales_person','fieldtype':'Data','options':'','width':'140'},
