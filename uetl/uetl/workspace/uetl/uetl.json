@@ -27,7 +27,16 @@
    "hidden": 0,
    "is_query_report": 1,
    "label": "Sales Tracker",
-   "link_to": "Sales Tracker UE",
+   "link_to": "Sales Tracker Direct",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Sales Personwise Transaction UE",
+   "link_to": "Sales Personwise Transaction UE",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
@@ -42,7 +51,7 @@
    "type": "Link"
   }
  ],
- "modified": "2022-02-22 19:07:20.861261",
+ "modified": "2022-05-12 09:12:43.273876",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "UETL",
