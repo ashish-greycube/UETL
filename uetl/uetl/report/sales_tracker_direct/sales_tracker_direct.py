@@ -47,7 +47,7 @@ select
             DATE_FORMAT(tpoi.expected_delivery_date,'%d-%b-%Y') confirmed_ship_date ,
             tsoi.special_remarks_cf as special_remarks,
             tpoi.cost_center  as sourcing,
-            tpoi.owner as purchaser,
+            tsoi.purchaser_cf as purchaser,
             tsii.parent as invoice_no,
             DATE_FORMAT(tsii.posting_date, '%d-%b-%Y') as invoice_date,
             tsii.stock_qty as si_qty,
@@ -135,7 +135,7 @@ select
         left outer JOIN `tabCost Center` tccp on tccp.name = tsoi.cost_center 
         left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
         left outer join `tabSales Person` tsp on tsp.name = tst.sales_person
-        left outer join `tabSales Person` tspp on tsp.name = tsp.parent_sales_person
+        left outer join `tabSales Person` tspp on tspp.name = tsp.parent_sales_person
         WHERE 
             tso.docstatus = 1 {conditions}
         order by 
@@ -188,9 +188,9 @@ Cust PO Dt,customer_po_date,Date,,150
 SO Created On,so_creation,Date,,150
 CPO Line #,cpo_line_no_cf,,,150
 External Part #,external_part_no_cf,,,150
-Item Code(SO Item),item_code,Link,Item,150
+Item Code,item_code,Link,Item,150
 Item #,item_number,,,150
-Item Group (SO Item),item_group,Link,Item Group,150
+Item Group,item_group,Link,Item Group,150
 UPG,unified_product_group_cf,,,150
 MFR,mfr,Data,,150
 CPO Qty,cpo_qty,Float,,150
@@ -199,29 +199,29 @@ Reserved Order Qty,reserved_order_qty,Float,,150
 Reserved Physical Qty,reserved_physical_qty,Float,,150
 Sold Qty,sold_qty,Float,,150
 Pending Order Qty,pending_qty,Float,,150
-Unit,stock_uom,,,150
-Unit Price,unit_price,Currency,,150
+Unit,stock_uom,,,80
+Unit Price,unit_price,Currency,,120
 Net Amt,net_amount,Currency,,150
 On Order (NP)Amt,on_order_np_amount,Currency,,150
 Reserved Order Amt,reserved_order_amount,Currency,,150
 Reserved Physical Amt,reserved_physical_amount,Currency,,150
 Sold Amt,sold_amount,Currency,,150
 Pending Order Amt,pending_amount,Currency,,150
-Currency,currency,,,150
+Currency,currency,,,90
 Requested Ship Dt(CRD),requested_ship_date,Date,,150
 Confirmed Ship Dt(EDA),confirmed_ship_date,Date,,150
 Special Remarks(Line Level),special_remarks,,,150
 Business Unit(Sourcing),tsoi_cost_center,,,150
 Purchaser,purchaser,,,150
 Purchaser Comment,purchaser_comment_cf,,,150
-Status,so_status,,,150
+Order Status,so_status,,,150
 Delivery Status,delivery_status,,,150
 Billing Status,billed_status,,,150
 Sales Order,sales_order,Link,Sales Order,150
 EPO No,purchase_order,Link,Purchase Order,150
 EPR No,purchase_receipt,Link,Purchase Receipt,150
 Material Receipt Dt,material_receipt_date,,,150
-Sales Invoice #,invoice_no,,,150
+Sales Invoice #,invoice_no,Link,Sales Invoice,150
 Invoice Dt,invoice_date,,,150
 IRN No,irn,,,150
 E-Way Bill No,ewaybill,,,150
@@ -232,13 +232,13 @@ Stock days(Sold Qty),stock_days_for_sold_qty,,,150
 Business Type,business_type,,,150
 Business Unit(TL/Product Group),parent_cost_center,,,150
 Business Unit(Product),grand_parent_cost_center,,,150
-Sales Tracked To,sales_tracked_to,,,150
-Sales Person - P,parent_sales_person,,,150
-Sales Person - GP,grand_parent_sales_person,,,150
+Sales Person,sales_tracked_to,,,150
+RSM Person,parent_sales_person,,,150
+Business Unit(Sales),grand_parent_sales_person,,,150
 Customer Group,customer_group,Link,Customer Group,150
 Territory,territory,Link,Territory,150
 Industry,industry,Data,,150
-Customer Payment Term,payment_terms_template,,,150"""
+Customer Payment Term,payment_terms_template,,,180"""
     )
 
 

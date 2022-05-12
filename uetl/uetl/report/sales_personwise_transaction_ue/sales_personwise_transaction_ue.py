@@ -116,17 +116,17 @@ def get_columns(filters):
             {'label':'Brand','fieldname':'brand','fieldtype':'Link','options':'Brand','width':'140'},
             {'label':'Qty','fieldname':'stock_qty','fieldtype':'Float','options':'','width':'140'},
             {'label':'Amount','fieldname':'base_net_amount','fieldtype':'Currency','options':'','width':'140'},
-            {'label':'Status','fieldname':'status','fieldtype':'Data','options':'','width':'140'},
+            {'label':'Inv Status','fieldname':'status','fieldtype':'Data','options':'','width':'140'},
             {'label':'Sales Person','fieldname':'sales_person','fieldtype':'Link','options':'Sales Person','width':'140'},
-            {'label':'Sales Person - P','fieldname':'rsm_sales_person','fieldtype':'Data','options':'','width':'140'},
-            {'label':'Sales Person - GP','fieldname':'bu_sales_person','fieldtype':'Data','options':'','width':'140'},
+            {'label':'RSM Person','fieldname':'rsm_sales_person','fieldtype':'Data','options':'','width':'140'},
+            {'label':'Business Unit (Sales)','fieldname':'bu_sales_person','fieldtype':'Data','options':'','width':'140'},
             {'label':'Territory','fieldname':'territory','fieldtype':'Link','options':'Territory','width':'140'},
             {'label':'Customer Group','fieldname':'customer_group','fieldtype':'Data','options':'','width':'140'},
             {'label':'Industry','fieldname':'industry','fieldtype':'Data','options':'','width':'140'},
             {'label':'Business Type','fieldname':'business_type_cf','fieldtype':'Data','options':'','width':'140'},
-            {'label':'Cost Center (SO Item)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
-            {'label':'Cost Center-P - (SO Item)','fieldname':'parent_cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
-            {'label':'Cost Center-GP - (SO Item)','fieldname':'g_parent_cost_center','fieldtype':'Link','options':'Cost Center','width':'140'}
+            {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
+            {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
+            {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'}
             ]"""
 
     return json.loads(columns.replace("'", '"'))
