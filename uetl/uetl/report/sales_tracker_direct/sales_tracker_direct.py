@@ -20,8 +20,8 @@ select
         	tc.name customer,
             tso.customer_name , 
             tso.po_no cpo_no, 
-			DATE_FORMAT(tso.po_date,'%d/%m/%Y')  customer_po_date, 
-            DATE_FORMAT(tso.creation,'%d/%m/%Y %H:%i') so_creation,
+			DATE_FORMAT(tso.po_date,'%%d/%%m/%%Y')  customer_po_date, 
+            DATE_FORMAT(tso.creation,'%%d/%%m/%%Y %%H:%%i') so_creation,
             tso.status so_status , tso.payment_terms_template ,
             tsoi.cpo_line_no_cf as cpo_line_no_cf,
             tsoi.external_part_no_cf as external_part_no_cf,
@@ -43,13 +43,13 @@ select
             tsoi.base_net_rate * (tsoi.delivered_qty) sold_amount, 
             tsoi.base_net_rate * (tsoi.stock_qty - tsoi.delivered_qty) pending_amount, 
             tso.currency , 
-            DATE_FORMAT(tsoi.delivery_date,'%d-%b-%Y') requested_ship_date, 
-            DATE_FORMAT(tpoi.expected_delivery_date,'%d-%b-%Y') confirmed_ship_date ,
+            DATE_FORMAT(tsoi.delivery_date,'%%d-%%b-%%Y') requested_ship_date, 
+            DATE_FORMAT(tpoi.expected_delivery_date,'%%d-%%b-%%Y') confirmed_ship_date ,
             tsoi.special_remarks_cf as special_remarks,
             tpoi.cost_center  as sourcing,
             tsoi.purchaser_cf as purchaser,
             tsii.parent as invoice_no,
-            DATE_FORMAT(tsii.posting_date, '%d-%b-%Y') as invoice_date,
+            DATE_FORMAT(tsii.posting_date, '%%d-%%b-%%Y') as invoice_date,
             tsii.stock_qty as si_qty,
             tsii.transporter as transporter_agency,
             tsii.lr_no as awb_no,
@@ -97,6 +97,7 @@ select
             `tabSales Order` tso
         inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name 
         inner join tabItem ti on ti.name = tsoi.item_code and ti.is_stock_item = 1
+        inner join tabCustomer tc on tc.name = tso.customer
 		left outer join tabBrand tbr on tbr.name = ti.brand 
         left outer join (
             select 
@@ -127,7 +128,6 @@ select
         ) tpoi on tpoi.sales_order = tsoi.parent 
             and tpoi.sales_order_item = tsoi.name             
         left outer join `tabBatch` tb  on tpri.batch_no  = tb.name
-        left outer join tabCustomer tc on tc.name = tso.customer
         left outer join (
             select parent, sales_person  from `tabSales Team` tst 
             group by parent
@@ -143,9 +143,29 @@ select
         """.format(
             conditions=get_conditions(filters)
         ),
+        filters,
         as_dict=True,
-        debug=True,
+        # debug=True,
     )
+
+    if filters.get("sales_person"):
+        value = filters.get("sales_person")
+        data = [
+            d
+            for d in data
+            if value == d.sales_tracked_to
+            or value == d.parent_sales_person
+            or value == d.grand_parent_sales_person
+        ]
+    if filters.get("cost_center"):
+        value = filters.get("cost_center")
+        data = [
+            d
+            for d in data
+            if value == d.tsoi_cost_center
+            or value == d.parent_cost_center
+            or value == d.grand_parent_cost_center
+        ]
 
     if not data:
         return []
@@ -253,6 +273,16 @@ def get_conditions(filters):
             )
         elif filters.so_status == "Closed":
             conditions.append("tso.status in ('Closed', 'Completed')")
+
+    if filters.get("customer"):
+        conditions.append("tc.name = %(customer)s")
+
+    if filters.get("territory"):
+        conditions.append("tc.territory = %(territory)s")
+
+    if filters.get("brand"):
+        conditions.append("ti.brand = %(brand)s")
+
     return conditions and " and " + " and ".join(conditions) or ""
 
 

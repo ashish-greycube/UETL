@@ -14,7 +14,7 @@ frappe.query_reports["Sales Personwise Transaction UE"] = {
 			fieldname: "doc_type",
 			label: __("Document Type"),
 			fieldtype: "Select",
-			options: "Sales Invoice",
+			options: "Sales Invoice\nSales Order",
 			default: "Sales Invoice"
 		},
 		{
@@ -66,6 +66,12 @@ frappe.query_reports["Sales Personwise Transaction UE"] = {
 			label: __("Show Return Entries"),
 			fieldtype: "Check",
 			default: 0,
+		},
+		{
+			fieldname: "cost_center",
+			label: __("Cost Center"),
+			fieldtype: "Link",
+			options: "Cost Center"
 		},
 	]
 }
