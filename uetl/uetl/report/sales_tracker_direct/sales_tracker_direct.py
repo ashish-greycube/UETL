@@ -167,6 +167,10 @@ select
             or value == d.grand_parent_cost_center
         ]
 
+    if filters.get("upg"):
+        value = filters.get("upg")
+        data = [d for d in data if value == d.unified_product_group_cf]
+
     if not data:
         return []
 
@@ -289,3 +293,20 @@ def get_conditions(filters):
 def csv_to_columns(csv_str):
     props = ["label", "fieldname", "fieldtype", "options", "width"]
     return [zip(props, col.split(",")) for col in csv_str.split("\n")]
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_upg(doctype, txt, searchfield, start, page_len, filters):
+    return frappe.db.sql(
+        """ select 
+                distinct unified_product_group_cf from tabBrand tb
+            where name like %(brand)s and unified_product_group_cf like %(txt)s 
+        limit %(start)s, %(page_len)s""",
+        {
+            "start": start,
+            "page_len": page_len,
+            "txt": "%%%s%%" % txt,
+            "brand": "%%%s%%" % filters.get("brand", ""),
+        },
+    )

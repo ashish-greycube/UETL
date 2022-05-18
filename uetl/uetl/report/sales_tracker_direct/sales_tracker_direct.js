@@ -42,10 +42,18 @@ frappe.query_reports["Sales Tracker Direct"] = {
 			options: "Brand",
 		},
 		{
-			fieldname: "upg",
 			label: __("UPG"),
-			fieldtype: "Select",
-			options: ""
+			fieldname: "upg",
+			fieldtype: "Link",
+			options: "Unified Product Group",
+			get_query: function () {
+				return {
+					query: "uetl.uetl.report.sales_tracker_direct.sales_tracker_direct.get_upg",
+					filters: {
+						brand: frappe.query_report.get_filter_value("brand")
+					}
+				};
+			}
 		},
 		// {
 		// 	fieldname: "status",
