@@ -59,6 +59,7 @@ def get_entries(filters):
                         WHEN dt.status = "Closed" THEN (dt_item.base_net_rate * dt_item.delivered_qty * dt_item.conversion_factor)
                         ELSE dt_item.base_net_amount
                 END as base_net_amount,
+                dt_item.base_net_rate ,
                 CASE
                         WHEN dt.status = "Closed" THEN ((dt_item.base_net_rate * dt_item.delivered_qty * dt_item.conversion_factor) * st.allocated_percentage/100)
                         ELSE dt_item.base_net_amount * st.allocated_percentage/100
@@ -104,6 +105,7 @@ def get_entries(filters):
                 WHEN dt.status = "Closed" THEN (dt_item.base_net_rate * dt_item.%s * dt_item.conversion_factor)
                 ELSE dt_item.base_net_amount
             END as base_net_amount,
+            dt_item.base_net_rate ,
             CASE
                 WHEN dt.status = "Closed" THEN ((dt_item.base_net_rate * dt_item.%s * dt_item.conversion_factor) * st.allocated_percentage/100)
                 ELSE dt_item.base_net_amount * st.allocated_percentage/100
@@ -170,6 +172,7 @@ def get_columns(filters):
                 {'label':'UPG','fieldname':'unified_product_group_cf','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Brand','fieldname':'brand','fieldtype':'Link','options':'Brand','width':'140'},
                 {'label':'Qty','fieldname':'stock_qty','fieldtype':'Float','options':'','width':'140'},
+                {'label':'Unit Price','fieldname':'base_net_rate','fieldtype':'Currency','options':'','width':'140'},
                 {'label':'Amount','fieldname':'base_net_amount','fieldtype':'Currency','options':'','width':'140'},
                 {'label':'Status','fieldname':'so_status','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Delivery Status','fieldname':'delivery_status','fieldtype':'Data','options':'','width':'140'},
@@ -183,7 +186,7 @@ def get_columns(filters):
                 {'label':'Customer Group','fieldname':'customer_group','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Industry','fieldname':'industry','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Business Type','fieldname':'business_type_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
+                {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
                 {'label':'Account Manager','fieldname':'account_manager','fieldtype':'Data','options':'','width':'140'},
@@ -209,6 +212,7 @@ def get_columns(filters):
                 {'label':'UPG','fieldname':'unified_product_group_cf','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Brand','fieldname':'brand','fieldtype':'Link','options':'Brand','width':'140'},
                 {'label':'Qty','fieldname':'stock_qty','fieldtype':'Float','options':'','width':'140'},
+                {'label':'Unit Price','fieldname':'base_net_rate','fieldtype':'Currency','options':'','width':'140'},
                 {'label':'Amount','fieldname':'base_net_amount','fieldtype':'Currency','options':'','width':'140'},
                 {'label':'Status','fieldname':'status','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Sales Person','fieldname':'sales_person','fieldtype':'Link','options':'Sales Person','width':'140'},
@@ -218,7 +222,7 @@ def get_columns(filters):
                 {'label':'Customer Group','fieldname':'customer_group','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Industry','fieldname':'industry','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Business Type','fieldname':'business_type_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
+                {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
                 {'label':'Account Manager','fieldname':'account_manager','fieldtype':'Data','options':'','width':'140'},
