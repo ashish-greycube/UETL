@@ -23,7 +23,7 @@ def validate_so_reference_in_item(self,method):
 
 def set_cost_center_based_on_sales_order(self,method):
     for item in self.items:
-        if not item.cost_center and item.so_detail:
+        if item.so_detail:
             item.cost_center= frappe.db.get_value('Sales Order Item', item.so_detail, 'cost_center')   
 
 def update_gst_hsn_code_cf_based_on_batch_no(self,method):
