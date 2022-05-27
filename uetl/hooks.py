@@ -114,7 +114,8 @@ doc_events = {
 		"on_submit":"uetl.doc_events.update_batch_for_hsn_code"
 	},
 	"Batch": {
-		"after_insert":"uetl.doc_events.set_sales_order_reference"
+		"after_insert":"uetl.doc_events.set_sales_order_reference",
+		"on_update":"uetl.doc_events.update_batch_no_to_purchase_receipt"
 	}				
 }
 # doc_events = {

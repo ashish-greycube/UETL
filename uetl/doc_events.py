@@ -65,3 +65,14 @@ def update_batch_for_hsn_code(self,method):
             batch_no.gst_hsn_code_cf=item.gst_hsn_code
             batch_no.save(ignore_permissions=True)
             frappe.msgprint(_("Batch no <b>{0}</b> is updated for <b> row {1} : Item {2}</b>").format(item.batch_no,item.idx,item.item_code),alert=1)
+
+def update_batch_no_to_purchase_receipt(self,method):
+    if self.gst_hsn_code_cf:
+        pr_items=frappe.db.get_list('Purchase Receipt Item', filters={'batch_no': self.name},fields=['gst_hsn_code', 'name','item_code','parent'])
+        for item in pr_items:
+            if item.gst_hsn_code!=self.gst_hsn_code_cf:
+                frappe.db.set_value('Purchase Receipt Item', item.name, 'gst_hsn_code', self.gst_hsn_code_cf)
+                frappe.msgprint(_("Purchase Receipt <b>{0}</b> : Item {1}</b> : GST HSN Code is updated to {2}")
+                 .format(item.parent,item.item_code,self.gst_hsn_code_cf),alert=1)
+
+
