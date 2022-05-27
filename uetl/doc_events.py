@@ -87,7 +87,7 @@ def update_batch_no_of_existing_records():
                 if item.gst_hsn_code!=gst_hsn_code_cf:
                     frappe.db.set_value('Purchase Receipt Item', item.name, 'gst_hsn_code', gst_hsn_code_cf)
                     print("Purchase Receipt",item.parent,'item code',item.item_code,gst_hsn_code_cf)
-                    if item.purchase_invoice_item:
+                    if item.pr_detail:
                         frappe.db.set_value('Purchase Invoice Item', item.pr_detail, 'gst_hsn_code', gst_hsn_code_cf)
                         print("Purchase Invoice Item",item.pr_detail,'gst_hsn_code', gst_hsn_code_cf)
     frappe.db.commit()
