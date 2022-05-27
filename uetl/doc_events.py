@@ -75,4 +75,21 @@ def update_batch_no_to_purchase_receipt(self,method):
                 frappe.msgprint(_("Purchase Receipt <b>{0}</b> : Item {1}</b> : GST HSN Code is updated to {2}")
                  .format(item.parent,item.item_code,self.gst_hsn_code_cf),alert=1)
 
+@frappe.whitelist(allow_guest=True)
+def update_batch_no_of_existing_records():
+    batch_list=frappe.db.get_list('Batch')
+    for batch in batch_list:
+        gst_hsn_code_cf = frappe.db.get_value('Batch', batch.name, 'gst_hsn_code_cf')
+        if gst_hsn_code_cf:
+            pr_items=frappe.db.get_list('Purchase Receipt Item', filters={'batch_no': batch.name},fields=['gst_hsn_code', 'name','item_code','parent'])
+            print('batch',batch.name)
+            for item in pr_items:
+                if item.gst_hsn_code!=gst_hsn_code_cf:
+                    frappe.db.set_value('Purchase Receipt Item', item.name, 'gst_hsn_code', gst_hsn_code_cf)
+                    print("Purchase Receipt",item.parent,'item code',item.item_code,gst_hsn_code_cf)
+                    if item.purchase_invoice_item:
+                        frappe.db.set_value('Purchase Invoice Item', item.purchase_invoice_item, 'gst_hsn_code', gst_hsn_code_cf)
+                        print("Purchase Invoice Item",item.purchase_invoice_item,'gst_hsn_code', gst_hsn_code_cf)
+    frappe.db.commit()
+
 
