@@ -85,15 +85,15 @@ def update_batch_no_of_existing_records():
             pr_items=frappe.db.get_list('Purchase Receipt Item', filters={'batch_no': batch.name},fields=['gst_hsn_code', 'name'])
             print('pr_items',pr_items)
             for pr_item in pr_items:
-                if pr_item.gst_hsn_code!=gst_hsn_code_cf:
-                    frappe.db.set_value('Purchase Receipt Item', pr_item.name, 'gst_hsn_code', gst_hsn_code_cf)
-                    print("Purchase Receipt Item",pr_item.name,'gst_hsn_code', gst_hsn_code_cf)
-                    pi_items=frappe.db.get_list('Purchase Invoice Item', filters={'pr_detail': pr_item.name},fields=['gst_hsn_code', 'name'])
-                    print('pi_items',pi_items)
-                    for pi_item in pi_items:
-                        if pi_item.name :
-                            frappe.db.set_value('Purchase Invoice Item', pi_item.name, 'gst_hsn_code', gst_hsn_code_cf)
-                            print("Purchase Invoice Item",pi_item.name,'gst_hsn_code', gst_hsn_code_cf)
+                # if pr_item.gst_hsn_code!=gst_hsn_code_cf:
+                frappe.db.set_value('Purchase Receipt Item', pr_item.name, 'gst_hsn_code', gst_hsn_code_cf)
+                print("Purchase Receipt Item",pr_item.name,'gst_hsn_code', gst_hsn_code_cf)
+                pi_items=frappe.db.get_list('Purchase Invoice Item', filters={'pr_detail': pr_item.name},fields=['gst_hsn_code', 'name'])
+                print('pi_items',pi_items)
+                for pi_item in pi_items:
+                    if pi_item.name :
+                        frappe.db.set_value('Purchase Invoice Item', pi_item.name, 'gst_hsn_code', gst_hsn_code_cf)
+                        print("Purchase Invoice Item",pi_item.name,'gst_hsn_code', gst_hsn_code_cf)
     frappe.db.commit()
 
 
