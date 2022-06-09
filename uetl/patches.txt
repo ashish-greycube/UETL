@@ -1,1 +1,2 @@
 uetl.patches.update_sales_order_customer_fields
+uetl.patches.update_sales_invoice_customer_fields

@@ -70,7 +70,7 @@ def get_entries(filters):
                 tsi.name sales_invoice , tsi.posting_date sales_invoice_date ,
                 rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
                 dt_item.business_type_cf , dt_item.cost_center , tcc.parent_cost_center , tcc_gp.parent_cost_center g_parent_cost_center ,
-                tc.account_manager , tc.reporting_manager_cf , tc.customer_support_cf
+                dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf
             FROM                                                                                                                  
                 `tabSales Order` dt
                 inner join `tabSales Order Item` dt_item on dt_item.parent = dt.name
@@ -116,7 +116,7 @@ def get_entries(filters):
             dt.customer_group , tsoi.business_type_cf , tsoi.cost_center , tcc.parent_cost_center , 
             tcc_gp.parent_cost_center g_parent_cost_center , dt_item.item_group , tc.industry , 
             DATE(tsoi.creation) so_date ,
-            tc.account_manager , tc.reporting_manager_cf , tc.customer_support_cf
+            dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 
