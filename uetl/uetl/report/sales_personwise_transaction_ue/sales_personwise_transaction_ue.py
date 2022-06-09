@@ -189,7 +189,7 @@ def get_columns(filters):
                 {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
-                {'label':'Account Manager','fieldname':'account_manager','fieldtype':'Data','options':'','width':'140'},
+                {'label':'Account Manager','fieldname':'account_manager_cf','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Reporting Manager','fieldname':'reporting_manager_cf','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Customer Support','fieldname':'customer_support_cf','fieldtype':'Data','options':'','width':'140'}
                 ]"""
@@ -225,7 +225,7 @@ def get_columns(filters):
                 {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
                 {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
-                {'label':'Account Manager','fieldname':'account_manager','fieldtype':'Data','options':'','width':'140'},
+                {'label':'Account Manager','fieldname':'account_manager_cf','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Reporting Manager','fieldname':'reporting_manager_cf','fieldtype':'Data','options':'','width':'140'},
                 {'label':'Customer Support','fieldname':'customer_support_cf','fieldtype':'Data','options':'','width':'140'}
                 ]"""
