@@ -209,7 +209,7 @@ def get_columns(filters):
 Customer Buyer,customer_buyer,,,150
 Customer Reference (CPO #),cpo_no,,,150
 Cust PO Dt,customer_po_date,Date,,150
-SO Created On,so_creation,Date,,150
+SO Created On,so_creation,DateTime,,150
 CPO Line #,cpo_line_no_cf,,,150
 External Part #,external_part_no_cf,,,150
 Item Code,item_code,Link,Item,150
