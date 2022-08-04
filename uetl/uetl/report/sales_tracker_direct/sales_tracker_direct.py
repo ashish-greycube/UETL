@@ -9,14 +9,15 @@ from frappe.utils import cstr, cint
 
 def execute(filters=None):
     columns, data = [], []
-    return get_columns(filters), get_data(filters)
+    data = get_data(filters)
+    columns = get_columns(filters, data and data[0] or None)
+    return columns, data
 
 
 def get_data(filters=None):
 
-    data = frappe.db.sql(
-        """
-select 
+    query = """
+        select 
         	tc.name customer,
             tso.customer_name , 
             tso.po_no cpo_no, 
@@ -79,7 +80,7 @@ select
                 when billed_amt = base_net_amount then 'Fully Billed'
                 else '' end billed_status ,
             tpoi.parent purchase_order, tpri.parent purchase_receipt ,
-            tsii.irn , tsii.ewaybill 
+            tsii.irn , tsii.ewaybill , tsoi.delivery_date soi_delivery_date
             -- '~',
             -- tsoi.parent 'so', tsoi.name 'soi name', 
             -- tpoi.name 'tpoi name', tpri.name 'tpri name', tsii.name 'tsii name',
@@ -140,8 +141,14 @@ select
             tso.docstatus = 1 {conditions}
         order by 
             tso.name, tsoi.idx, tpri.item_code, tsii.item_code , tpri.batch_no , tsii.batch_no  
-        """.format(
-            conditions=get_conditions(filters)
+        """
+
+    if cint(filters.get("hide_group_fields")):
+        query = SHOW_SUMMARY_SQL.format(query)
+
+    data = frappe.db.sql(
+        query.format(
+            conditions=get_conditions(filters),
         ),
         filters,
         as_dict=True,
@@ -171,99 +178,43 @@ select
         value = filters.get("upg")
         data = [d for d in data if value == d.unified_product_group_cf]
 
-    if not data:
-        return []
+    return data or []
 
-    if not cint(filters.get("hide_group_fields")):
-        return data
+    # if not cint(filters.get("hide_group_fields")):
+    #     return data
 
-    show_in_group_fields = [
-        "confirmed_ship_date",
-        "sourcing",
-        "purchaser",
-        "invoice_no",
-        "invoice_date",
-        "si_qty",
-        "transporter_agency",
-        "awb_no",
-        "material_receipt_date",
-        "pr_item_batch_no",
-        "si_item_batch_no",
-        "stock_days_for_stock_qty",
-        "stock_days_for_sold_qty",
-    ]
+    # show_in_group_fields = [
+    #     "confirmed_ship_date",
+    #     "sourcing",
+    #     "purchaser",
+    #     "invoice_no",
+    #     "invoice_date",
+    #     "si_qty",
+    #     "transporter_agency",
+    #     "awb_no",
+    #     "material_receipt_date",
+    #     "pr_item_batch_no",
+    #     "si_item_batch_no",
+    #     "stock_days_for_stock_qty",
+    #     "stock_days_for_sold_qty",
+    # ]
 
-    out = []
-    for key, group in groupby(data, lambda x: x["sales_order"]):
-        items = list(group)
-        out.append(items[0])
-        for d in items[1:]:
-            out.append({x: d[x] for x in d if x in show_in_group_fields})
+    # out = []
+    # for key, group in groupby(data, lambda x: x["sales_order"]):
+    #     items = list(group)
+    #     out.append(items[0])
+    #     for d in items[1:]:
+    #         out.append({x: d[x] for x in d if x in show_in_group_fields})
 
-    return out
+    # return out
 
 
-def get_columns(filters):
-    return csv_to_columns(
-        """Customers Name,customer_name,,,150
-Customer Buyer,customer_buyer,,,150
-Customer Reference (CPO #),cpo_no,,,150
-Cust PO Dt,customer_po_date,Date,,150
-SO Created On,so_creation,DateTime,,150
-CPO Line #,cpo_line_no_cf,,,150
-External Part #,external_part_no_cf,,,150
-Item Code,item_code,Link,Item,150
-Item #,item_number,,,150
-Item Group,item_group,Link,Item Group,150
-UPG,unified_product_group_cf,,,150
-MFR,mfr,Data,,150
-CPO Qty,cpo_qty,Float,,150
-On Order (NP)QTY,on_order_np_qty,Float,,150
-Reserved Order Qty,reserved_order_qty,Float,,150
-Reserved Physical Qty,reserved_physical_qty,Float,,150
-Sold Qty,sold_qty,Float,,150
-Pending Order Qty,pending_qty,Float,,150
-Unit,stock_uom,,,80
-Unit Price,unit_price,Currency,,120
-Net Amt,net_amount,Currency,,150
-On Order (NP)Amt,on_order_np_amount,Currency,,150
-Reserved Order Amt,reserved_order_amount,Currency,,150
-Reserved Physical Amt,reserved_physical_amount,Currency,,150
-Sold Amt,sold_amount,Currency,,150
-Pending Order Amt,pending_amount,Currency,,150
-Currency,currency,,,90
-Requested Ship Dt(CRD),requested_ship_date,Date,,150
-Confirmed Ship Dt(EDA),confirmed_ship_date,Date,,150
-Special Remarks(Line Level),special_remarks,,,150
-Business Unit(Sourcing),tsoi_cost_center,,,150
-Purchaser,purchaser,,,150
-Purchaser Comment,purchaser_comment_cf,,,150
-Order Status,so_status,,,150
-Delivery Status,delivery_status,,,150
-Billing Status,billed_status,,,150
-Sales Order,sales_order,Link,Sales Order,150
-EPO No,purchase_order,Link,Purchase Order,150
-EPR No,purchase_receipt,Link,Purchase Receipt,150
-Material Receipt Dt,material_receipt_date,,,150
-Sales Invoice #,invoice_no,Link,Sales Invoice,150
-Invoice Dt,invoice_date,,,150
-IRN No,irn,,,150
-E-Way Bill No,ewaybill,,,150
-Transporter Agency,transporter_agency,,,150
-AWB #,awb_no,,,150
-Stock days(Stock Qty),stock_days_for_stock_qty,,,150
-Stock days(Sold Qty),stock_days_for_sold_qty,,,150
-Business Type,business_type,,,150
-Business Unit(TL/Product Group),parent_cost_center,,,150
-Business Unit(Product),grand_parent_cost_center,,,150
-Sales Person,sales_tracked_to,,,150
-RSM Person,parent_sales_person,,,150
-Business Unit(Sales),grand_parent_sales_person,,,150
-Customer Group,customer_group,Link,Customer Group,150
-Territory,territory,Link,Territory,150
-Industry,industry,Data,,150
-Customer Payment Term,payment_terms_template,,,180"""
-    )
+def get_columns(filters, item):
+    columns, fieldnames = [], item.keys()
+    for d in COLUMNS:
+        if [k for k in fieldnames if f",{k}," in d]:
+            columns.append(d)
+    return csv_to_columns("\n".join(columns))
 
 
 def get_conditions(filters):
@@ -310,3 +261,149 @@ def get_upg(doctype, txt, searchfield, start, page_len, filters):
             "brand": "%%%s%%" % filters.get("brand", ""),
         },
     )
+
+
+COLUMNS = [
+    "Customers Name,customer_name,,,150",
+    "Customer Buyer,customer_buyer,,,150",
+    "Customer Reference (CPO #),cpo_no,,,150",
+    "Cust PO Dt,customer_po_date,Date,,150",
+    "SO Created On,so_creation,DateTime,,150",
+    "CPO Line #,cpo_line_no_cf,,,150",
+    "External Part #,external_part_no_cf,,,150",
+    "Item Code,item_code,Link,Item,150",
+    "Item #,item_number,,,150",
+    "Item Group,item_group,Link,Item Group,150",
+    "UPG,unified_product_group_cf,,,150",
+    "MFR,mfr,Data,,150",
+    "CPO Qty,cpo_qty,Float,,150",
+    "On Order (NP)QTY,on_order_np_qty,Float,,150",
+    "Reserved Order Qty,reserved_order_qty,Float,,150",
+    "Reserved Physical Qty,reserved_physical_qty,Float,,150",
+    "Sold Qty,sold_qty,Float,,150",
+    "Pending Order Qty,pending_qty,Float,,150",
+    "Unit,stock_uom,,,80",
+    "Unit Price,unit_price,Currency,,120",
+    "Net Amt,net_amount,Currency,,150",
+    "On Order (NP)Amt,on_order_np_amount,Currency,,150",
+    "Reserved Order Amt,reserved_order_amount,Currency,,150",
+    "Reserved Physical Amt,reserved_physical_amount,Currency,,150",
+    "Sold Amt,sold_amount,Currency,,150",
+    "Pending Order Amt,pending_amount,Currency,,150",
+    "Currency,currency,,,90",
+    "Requested Ship Dt(CRD),requested_ship_date,Date,,150",
+    "Requested Ship Dt(CRD),soi_delivery_date,Date,,150",
+    "Confirmed Ship Dt(EDA),confirmed_ship_date,Date,,150",
+    "Earliest Ship Dt(EDA),earliest_eda,Date,,150",
+    "Farthest Ship Dt(EDA),farthest_eda,Date,,150",
+    "Special Remarks(Line Level),special_remarks,,,150",
+    "Business Unit(Sourcing),tsoi_cost_center,,,150",
+    "Purchaser,purchaser,,,150",
+    "Purchaser Comment,purchaser_comment_cf,,,150",
+    "Order Status,so_status,,,150",
+    "Delivery Status,delivery_status,,,150",
+    "Billing Status,billed_status,,,150",
+    "Sales Order,sales_order,Link,Sales Order,150",
+    "EPO No,purchase_order,Link,Purchase Order,150",
+    "EPR No,purchase_receipt,Link,Purchase Receipt,150",
+    "Material Receipt Dt,material_receipt_date,,,150",
+    "Sales Invoice #,invoice_no,Link,Sales Invoice,150",
+    "Invoice Dt,invoice_date,,,150",
+    "IRN No,irn,,,150",
+    "E-Way Bill No,ewaybill,,,150",
+    "Transporter Agency,transporter_agency,,,150",
+    "AWB #,awb_no,,,150",
+    "Stock days(Stock Qty),stock_days_for_stock_qty,,,150",
+    "Stock days(Sold Qty),stock_days_for_sold_qty,,,150",
+    "Business Type,business_type,,,150",
+    "Business Unit(TL/Product Group),parent_cost_center,,,150",
+    "Business Unit(Product),grand_parent_cost_center,,,150",
+    "Sales Person,sales_tracked_to,,,150",
+    "RSM Person,parent_sales_person,,,150",
+    "Business Unit(Sales),grand_parent_sales_person,,,150",
+    "Customer Group,customer_group,Link,Customer Group,150",
+    "Territory,territory,Link,Territory,150",
+    "Industry,industry,Data,,150",
+    "Customer Payment Term,payment_terms_template,,,180",
+]
+
+
+SHOW_SUMMARY_SQL = """
+        select 
+            customer_name,
+            customer_buyer,
+            cpo_no,
+            customer_po_date,
+            so_creation,
+            cpo_line_no_cf,
+            external_part_no_cf,
+            item_code,
+            item_group,
+            item_number,
+            unified_product_group_cf,
+            mfr,
+            currency,
+            sourcing,
+            purchaser,
+            so_status,
+            delivery_status,
+            billed_status,
+            sales_order,
+            business_type,
+            parent_cost_center ,
+            grand_parent_cost_center ,
+            sales_tracked_to ,
+            parent_sales_person ,
+            grand_parent_sales_person ,
+            customer_group ,
+            territory ,
+            industry ,
+            payment_terms_template ,
+            confirmed_ship_date ,
+            sum(cpo_qty) cpo_qty ,
+            sum(on_order_np_qty) on_order_np_qty ,
+            sum(reserved_order_qty) reserved_order_qty ,
+            sum(reserved_order_amount) reserved_order_amount ,
+            sum(sold_amount) sold_amount ,
+            sum(pending_amount) pending_amount ,
+            sum(net_amount) net_amount ,
+            sum(reserved_physical_amount) reserved_physical_amount ,
+            sum(reserved_physical_qty) reserved_physical_qty ,
+            avg(unit_price) unit_price ,
+            sum(pending_qty) pending_qty ,
+            sum(sold_qty) sold_qty ,
+            min(soi_delivery_date) soi_delivery_date,
+            min(confirmed_ship_date) earliest_eda ,
+            max(confirmed_ship_date) farthest_eda 
+        from ({}) t
+        group by 
+            customer_name,
+            customer_buyer,
+            cpo_no,
+            customer_po_date,
+            so_creation,
+            cpo_line_no_cf,
+            external_part_no_cf,
+            item_code,
+            item_group,
+            item_number,
+            unified_product_group_cf,
+            mfr,
+            currency,
+            sourcing,
+            purchaser,
+            so_status,
+            delivery_status,
+            billed_status,
+            sales_order,
+            business_type,
+            parent_cost_center ,
+            grand_parent_cost_center ,
+            sales_tracked_to ,
+            parent_sales_person ,
+            grand_parent_sales_person ,
+            customer_group ,
+            territory ,
+            industry ,
+            payment_terms_template
+        """
