@@ -152,7 +152,7 @@ def get_data(filters=None):
         ),
         filters,
         as_dict=True,
-        # debug=True,
+        debug=True,
     )
 
     if filters.get("sales_person"):
@@ -379,10 +379,8 @@ SHOW_SUMMARY_SQL = """
         group by 
             customer_name,
             customer_buyer,
-            cpo_no,
             customer_po_date,
             so_creation,
-            cpo_line_no_cf,
             external_part_no_cf,
             item_code,
             item_group,
