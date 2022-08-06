@@ -180,40 +180,12 @@ def get_data(filters=None):
 
     return data or []
 
-    # if not cint(filters.get("hide_group_fields")):
-    #     return data
-
-    # show_in_group_fields = [
-    #     "confirmed_ship_date",
-    #     "sourcing",
-    #     "purchaser",
-    #     "invoice_no",
-    #     "invoice_date",
-    #     "si_qty",
-    #     "transporter_agency",
-    #     "awb_no",
-    #     "material_receipt_date",
-    #     "pr_item_batch_no",
-    #     "si_item_batch_no",
-    #     "stock_days_for_stock_qty",
-    #     "stock_days_for_sold_qty",
-    # ]
-
-    # out = []
-    # for key, group in groupby(data, lambda x: x["sales_order"]):
-    #     items = list(group)
-    #     out.append(items[0])
-    #     for d in items[1:]:
-    #         out.append({x: d[x] for x in d if x in show_in_group_fields})
-
-    # return out
-
 
 def get_columns(filters, item):
-    columns, fieldnames = [], item.keys()
-    for d in COLUMNS:
-        if [k for k in fieldnames if f",{k}," in d]:
-            columns.append(d)
+    columns = (
+        cint(filters.get("hide_group_fields")) and SHOW_SUMMARY_COLUMNS
+    ) or COLUMNS
+
     return csv_to_columns("\n".join(columns))
 
 
@@ -292,7 +264,6 @@ COLUMNS = [
     "Pending Order Amt,pending_amount,Currency,,150",
     "Currency,currency,,,90",
     "Requested Ship Dt(CRD),requested_ship_date,Date,,150",
-    "Requested Ship Dt(CRD),soi_delivery_date,Date,,150",
     "Confirmed Ship Dt(EDA),confirmed_ship_date,Date,,150",
     "Earliest Ship Dt(EDA),earliest_eda,Date,,150",
     "Farthest Ship Dt(EDA),farthest_eda,Date,,150",
@@ -330,11 +301,12 @@ COLUMNS = [
 
 SHOW_SUMMARY_SQL = """
         select 
+            customer ,
             customer_name,
             customer_buyer,
             cpo_no,
             customer_po_date,
-            so_creation,
+            DATE(so_creation) so_creation,
             cpo_line_no_cf,
             external_part_no_cf,
             item_code,
@@ -345,6 +317,7 @@ SHOW_SUMMARY_SQL = """
             currency,
             sourcing,
             purchaser,
+            tsoi_cost_center ,
             so_status,
             delivery_status,
             billed_status,
@@ -359,7 +332,6 @@ SHOW_SUMMARY_SQL = """
             territory ,
             industry ,
             payment_terms_template ,
-            confirmed_ship_date ,
 			avg(cpo_qty) cpo_qty ,
 			avg(on_order_np_qty) on_order_np_qty ,
 			avg(reserved_order_qty) reserved_order_qty ,
@@ -367,12 +339,13 @@ SHOW_SUMMARY_SQL = """
 			avg(sold_amount) sold_amount ,
 			avg(pending_amount) pending_amount ,
 			avg(net_amount) net_amount ,
+            avg(on_order_np_amount) on_order_np_amount ,
 			avg(reserved_physical_amount) reserved_physical_amount ,
 			avg(reserved_physical_qty) reserved_physical_qty ,
 			avg(unit_price) unit_price ,
 			avg(pending_qty) pending_qty ,
 			avg(sold_qty) sold_qty ,
-			min(soi_delivery_date) soi_delivery_date,
+			min(requested_ship_date) requested_ship_date,
 			min(confirmed_ship_date) earliest_eda ,
 			max(confirmed_ship_date) farthest_eda 
         from ({}) t
@@ -390,6 +363,7 @@ SHOW_SUMMARY_SQL = """
             currency,
             sourcing,
             purchaser,
+            tsoi_cost_center,
             so_status,
             delivery_status,
             billed_status,
@@ -405,3 +379,51 @@ SHOW_SUMMARY_SQL = """
             industry ,
             payment_terms_template
         """
+
+SHOW_SUMMARY_COLUMNS = [
+    "Customers Name,customer_name,,,150",
+    "Customer PO No,cpo_no,,,150",
+    "Cust PO Dt,customer_po_date,Date,,150",
+    "Sales Order,sales_order,Link,Sales Order,150",
+    "SO Created On,so_creation,Date,,150",
+    "CPO Line #,cpo_line_no_cf,,,150",
+    "External Part #,external_part_no_cf,,,150",
+    "Part No,item_number,,,150",
+    "Make,mfr,Data,,150",
+    "Currency,currency,,,90",
+    "Unit Price,unit_price,Currency,,120",
+    "CPO Qty,cpo_qty,Float,,150",
+    "Sold Qty,sold_qty,Float,,150",
+    "Pending Qty,pending_qty,Float,,150",
+    "CPO Amt,net_amount,Currency,,150",
+    "Sold Amt,sold_amount,Currency,,150",
+    "Pending Amt,pending_amount,Currency,,150",
+    "Requested Ship Dt,requested_ship_date,Date,,150",
+    "Earliest Ship Dt,earliest_eda,Date,,150",
+    "Farthest Ship Dt,farthest_eda,Date,,150",
+    "Purchaser,purchaser,,,150",
+    "Sourcing / PM,tsoi_cost_center,,,150",
+    "Sales Person,sales_tracked_to,,,150",
+    "Order Status,so_status,,,150",
+    "Delivery Status,delivery_status,,,150",
+    "Billing Status,billed_status,,,150",
+    "Business Type,business_type,,,150",
+    "BU Product Team,parent_cost_center,,,150",
+    "BU Product,grand_parent_cost_center,,,150",
+    "RSM Team,parent_sales_person,,,150",
+    "BU-Sales,grand_parent_sales_person,,,150",
+    "Customer Group,customer_group,Link,Customer Group,150",
+    "Territory,territory,Link,Territory,150",
+    "Industry,industry,Data,,150",
+    "Customer Payment Term,payment_terms_template,,,180",
+    "Customer Buyer,customer_buyer,,,150",
+    "Item Group,item_group,Link,Item Group,150",
+    "UPG,unified_product_group_cf,,,150",
+    "Item Code,item_code,Link,Item,150",
+    "On Order Qty,on_order_np_qty,Float,,150",
+    "Reserved Order Qty,reserved_order_qty,Float,,150",
+    "Reserved Physical Qty,reserved_physical_qty,Float,,150",
+    "On Order Amt,on_order_np_amount,Currency,,150",
+    "Reserved Order Amt,reserved_order_amount,Currency,,150",
+    "Reserved Physical Amt,reserved_physical_amount,Currency,,150",
+]
