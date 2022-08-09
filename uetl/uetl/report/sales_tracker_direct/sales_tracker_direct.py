@@ -144,7 +144,7 @@ def get_data(filters=None):
         """
 
     if cint(filters.get("hide_group_fields")):
-        query = SHOW_SUMMARY_SQL.format(query)
+        query = SHOW_SUMMARY_SQL
 
     data = frappe.db.sql(
         query.format(
@@ -152,7 +152,7 @@ def get_data(filters=None):
         ),
         filters,
         as_dict=True,
-        debug=True,
+        # debug=True,
     )
 
     if filters.get("sales_person"):
@@ -207,7 +207,7 @@ def get_conditions(filters):
     if filters.get("territory"):
         conditions.append("tc.territory = %(territory)s")
 
-    if filters.get("brand"):
+    if filters.get("brand") and not cint(filters.get("hide_group_fields")):
         conditions.append("ti.brand = %(brand)s")
 
     return conditions and " and " + " and ".join(conditions) or ""
@@ -300,84 +300,100 @@ COLUMNS = [
 
 
 SHOW_SUMMARY_SQL = """
-        select 
-            customer ,
-            customer_name,
-            customer_buyer,
-            cpo_no,
-            customer_po_date,
-            DATE(so_creation) so_creation,
-            cpo_line_no_cf,
-            external_part_no_cf,
-            item_code,
-            item_group,
-            item_number,
-            unified_product_group_cf,
-            mfr,
-            currency,
-            sourcing,
-            purchaser,
-            tsoi_cost_center ,
-            so_status,
-            delivery_status,
-            billed_status,
-            sales_order,
-            business_type,
-            parent_cost_center ,
-            grand_parent_cost_center ,
-            sales_tracked_to ,
-            parent_sales_person ,
-            grand_parent_sales_person ,
-            customer_group ,
-            territory ,
-            industry ,
-            payment_terms_template ,
-			avg(cpo_qty) cpo_qty ,
-			avg(on_order_np_qty) on_order_np_qty ,
-			avg(reserved_order_qty) reserved_order_qty ,
-			avg(reserved_order_amount) reserved_order_amount ,
-			avg(sold_amount) sold_amount ,
-			avg(pending_amount) pending_amount ,
-			avg(net_amount) net_amount ,
-            avg(on_order_np_amount) on_order_np_amount ,
-			avg(reserved_physical_amount) reserved_physical_amount ,
-			avg(reserved_physical_qty) reserved_physical_qty ,
-			avg(unit_price) unit_price ,
-			avg(pending_qty) pending_qty ,
-			avg(sold_qty) sold_qty ,
-			min(requested_ship_date) requested_ship_date,
-			min(confirmed_ship_date) earliest_eda ,
-			max(confirmed_ship_date) farthest_eda 
-        from ({}) t
-        group by 
-            customer_name,
-            customer_buyer,
-            customer_po_date,
-            so_creation,
-            external_part_no_cf,
-            item_code,
-            item_group,
-            item_number,
-            unified_product_group_cf,
-            mfr,
-            currency,
-            sourcing,
-            purchaser,
-            tsoi_cost_center,
-            so_status,
-            delivery_status,
-            billed_status,
-            sales_order,
-            business_type,
-            parent_cost_center ,
-            grand_parent_cost_center ,
-            sales_tracked_to ,
-            parent_sales_person ,
-            grand_parent_sales_person ,
-            customer_group ,
-            territory ,
-            industry ,
-            payment_terms_template
+select 
+    case when delivered_qty = 0 then 'Not Delivered'
+                when qty = delivered_qty then 'Fully Delivered'
+                when qty > delivered_qty then 'Partly Delivered'
+                else '' end delivery_status ,	
+    case when billed_amt = 0 then 'Not Billed'
+        when billed_amt < base_net_amount then 'Partly Billed'
+        when billed_amt = base_net_amount then 'Fully Billed'
+        else '' end  billed_status,
+tpoi.cost_center sourcing ,
+so.ordered_qty - coalesce(tpoi.received_qty,0) reserved_order_qty ,
+(so.ordered_qty - so.delivered_qty - tpoi.stock_qty + received_qty) reserved_physical_qty ,
+base_net_rate * (ordered_qty - coalesce(received_qty,0)) reserved_order_amount ,
+base_net_rate * (so.ordered_qty - so.delivered_qty - tpoi.stock_qty - received_qty) reserved_physical_amount ,
+tpoi.earliest_eda , tpoi.farthest_eda ,
+so.* 
+from 
+(      
+    select 
+    sum(tsoi.qty) qty ,
+    sum(tsoi.stock_qty) cpo_qty ,
+    sum(tsoi.stock_qty - tsoi.ordered_qty) on_order_np_qty ,
+    sum(tsoi.delivered_qty) sold_qty ,
+    sum(tsoi.stock_qty - tsoi.delivered_qty) pending_qty ,       
+    sum(base_net_rate * (tsoi.stock_qty - tsoi.delivered_qty)) pending_amount ,
+    sum(tsoi.ordered_qty) ordered_qty , 
+    sum(tsoi.delivered_qty) delivered_qty ,
+    sum(tsoi.base_net_rate * tsoi.delivered_qty) sold_amount ,
+    sum(tsoi.billed_amt) billed_amt ,
+    sum(tsoi.base_net_amount) base_net_amount ,
+    sum(tsoi.base_net_rate * (tsoi.stock_qty - tsoi.ordered_qty)) on_order_np_amount,
+    avg(tsoi.base_net_rate) base_net_rate , 
+    tc.name customer ,
+    tso.customer_name,
+    tso.contact_display customer_buyer,
+    tso.po_no cpo_no,
+    DATE_FORMAT(tso.po_date,'%%d/%%m/%%Y') customer_po_date,
+    DATE(tso.creation) so_creation,
+    DATE_FORMAT(tsoi.delivery_date,'%%d-%%b-%%Y') requested_ship_date, 
+    tsoi.cpo_line_no_cf,
+    external_part_no_cf,
+    tsoi.item_code,
+    tsoi.item_group,
+    tsoi.item_name item_number,
+    unified_product_group_cf,
+    tsoi.brand mfr,
+	tso.currency,
+    tsoi.purchaser_cf purchaser,
+    group_concat(tsoi.cost_center) tsoi_cost_center ,
+    tso.status so_status,
+    tso.name sales_order,
+    tsoi.business_type_cf business_type,
+    tccp.parent_cost_center ,
+    tccgp.parent_cost_center grand_parent_cost_center ,
+    tst.sales_person sales_tracked_to ,
+    tsp.parent_sales_person , 
+    tspp.parent_sales_person grand_parent_sales_person , 
+    tc.customer_group ,
+    tso.territory ,
+    tc.industry ,
+    tso.payment_terms_template 
+    from 
+        `tabSales Order` tso
+    inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name 
+    inner join tabItem ti on ti.name = tsoi.item_code and ti.is_stock_item = 1
+    inner join tabCustomer tc on tc.name = tso.customer
+    left outer join tabBrand tbr on tbr.name = ti.brand 
+    left outer join (
+        select parent, sales_person  from `tabSales Team` tst 
+        group by parent
+    ) tst on tst.parent = tso.name
+    left outer JOIN `tabCost Center` tccp on tccp.name = tsoi.cost_center 
+    left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
+    left outer join `tabSales Person` tsp on tsp.name = tst.sales_person
+    left outer join `tabSales Person` tspp on tspp.name = tsp.parent_sales_person
+    WHERE 
+        tso.docstatus = 1 {conditions}
+    group by tso.name , tsoi.item_code
+) so 
+left outer join (
+    select 
+        tpoi.sales_order, tpoi.item_code , 
+        GROUP_CONCAT(tpoi.cost_center) cost_center , 
+        sum(tpoi.received_qty) received_qty, 
+        sum(tpoi.stock_qty) stock_qty ,
+        min(tpoi.expected_delivery_date) earliest_eda,
+        max(tpoi.expected_delivery_date) farthest_eda 
+        from  `tabPurchase Order` tpo
+        inner join `tabPurchase Order Item` tpoi on tpoi.parent = tpo.name
+        where tpo.docstatus = 1
+        group by tpoi.sales_order , tpoi.item_code 
+) tpoi on tpoi.sales_order = so.sales_order and tpoi.item_code = so.item_code             
+order by so.customer, so.item_code
+
         """
 
 SHOW_SUMMARY_COLUMNS = [
@@ -391,11 +407,11 @@ SHOW_SUMMARY_COLUMNS = [
     "Part No,item_number,,,150",
     "Make,mfr,Data,,150",
     "Currency,currency,,,90",
-    "Unit Price,unit_price,Currency,,120",
+    "Unit Price,base_net_rate,Currency,,120",
     "CPO Qty,cpo_qty,Float,,150",
     "Sold Qty,sold_qty,Float,,150",
     "Pending Qty,pending_qty,Float,,150",
-    "CPO Amt,net_amount,Currency,,150",
+    "CPO Amt,base_net_amount,Currency,,150",
     "Sold Amt,sold_amount,Currency,,150",
     "Pending Amt,pending_amount,Currency,,150",
     "Requested Ship Dt,requested_ship_date,Date,,150",
