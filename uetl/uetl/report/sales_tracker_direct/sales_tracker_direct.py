@@ -311,9 +311,9 @@ select
         else '' end  billed_status,
 tpoi.cost_center sourcing ,
 so.ordered_qty - coalesce(tpoi.received_qty,0) reserved_order_qty ,
-(so.ordered_qty - so.delivered_qty - tpoi.stock_qty + received_qty) reserved_physical_qty ,
+(so.ordered_qty - so.delivered_qty - tpoi.stock_qty + tpoi.received_qty) reserved_physical_qty ,
 base_net_rate * (ordered_qty - coalesce(received_qty,0)) reserved_order_amount ,
-base_net_rate * (so.ordered_qty - so.delivered_qty - tpoi.stock_qty - received_qty) reserved_physical_amount ,
+base_net_rate * (so.ordered_qty - so.delivered_qty - tpoi.stock_qty + tpoi.received_qty) reserved_physical_amount ,
 tpoi.earliest_eda , tpoi.farthest_eda ,
 so.* 
 from 
