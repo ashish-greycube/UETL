@@ -152,7 +152,6 @@ def get_data(filters=None):
         ),
         filters,
         as_dict=True,
-        # debug=True,
     )
 
     if filters.get("sales_person"):
@@ -160,18 +159,18 @@ def get_data(filters=None):
         data = [
             d
             for d in data
-            if value == d.sales_tracked_to
-            or value == d.parent_sales_person
-            or value == d.grand_parent_sales_person
+            if value in (d.sales_tracked_to or "")
+            or value in (d.parent_sales_person or "")
+            or value in (d.grand_parent_sales_person or "")
         ]
     if filters.get("cost_center"):
         value = filters.get("cost_center")
         data = [
             d
             for d in data
-            if value == d.tsoi_cost_center
-            or value == d.parent_cost_center
-            or value == d.grand_parent_cost_center
+            if value in (d.tsoi_cost_center or "")
+            or value in (d.parent_cost_center or "")
+            or value in (d.grand_parent_cost_center or "")
         ]
 
     if filters.get("upg"):
@@ -191,7 +190,7 @@ def get_columns(filters, item):
 
 def get_conditions(filters):
     conditions = []
-    # conditions.append(" tso.name = 'SAL-ORD-2022-00011' ")
+    # conditions.append(" tso.name = 'ESO2201186' ")
 
     if filters.so_status:
         if filters.so_status == "Open":
@@ -314,7 +313,7 @@ so.ordered_qty - coalesce(tpoi.received_qty,0) reserved_order_qty ,
 (so.ordered_qty - so.delivered_qty - tpoi.stock_qty + tpoi.received_qty) reserved_physical_qty ,
 base_net_rate * (ordered_qty - coalesce(received_qty,0)) reserved_order_amount ,
 base_net_rate * (so.ordered_qty - so.delivered_qty - tpoi.stock_qty + tpoi.received_qty) reserved_physical_amount ,
-tpoi.earliest_eda , tpoi.farthest_eda ,
+tpoi.earliest_eda , tpoi.farthest_eda , 
 so.* 
 from 
 (      
@@ -348,7 +347,7 @@ from
     tsoi.brand mfr,
 	tso.currency,
     tsoi.purchaser_cf purchaser,
-    group_concat(tsoi.cost_center) tsoi_cost_center ,
+    group_concat(distinct tsoi.cost_center) tsoi_cost_center ,
     tso.status so_status,
     tso.name sales_order,
     tsoi.business_type_cf business_type,
@@ -382,7 +381,7 @@ from
 left outer join (
     select 
         tpoi.sales_order, tpoi.item_code , 
-        GROUP_CONCAT(tpoi.cost_center) cost_center , 
+        GROUP_CONCAT(distinct tpoi.cost_center) cost_center , 
         sum(tpoi.received_qty) received_qty, 
         sum(tpoi.stock_qty) stock_qty ,
         min(tpoi.expected_delivery_date) earliest_eda,
