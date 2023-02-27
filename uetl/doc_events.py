@@ -68,7 +68,7 @@ def update_batch_for_hsn_code(self,method):
 
 def update_batch_no_to_purchase_receipt(self,method):
     if self.gst_hsn_code_cf:
-        pr_items=frappe.db.get_list('Purchase Receipt Item', filters={'batch_no': self.name},fields=['gst_hsn_code', 'name','item_code','parent'])
+        pr_items=frappe.db.get_all('Purchase Receipt Item', filters={'batch_no': self.name},fields=['gst_hsn_code', 'name','item_code','parent'])
         for item in pr_items:
             if item.gst_hsn_code!=self.gst_hsn_code_cf:
                 frappe.db.set_value('Purchase Receipt Item', item.name, 'gst_hsn_code', self.gst_hsn_code_cf)
@@ -77,18 +77,18 @@ def update_batch_no_to_purchase_receipt(self,method):
 
 @frappe.whitelist(allow_guest=True)
 def update_batch_no_of_existing_records():
-    batch_list=frappe.db.get_list('Batch')
+    batch_list=frappe.db.get_all('Batch')
     for batch in batch_list:
         gst_hsn_code_cf = frappe.db.get_value('Batch', batch.name, 'gst_hsn_code_cf')
         print('Batch',batch.name, 'gst_hsn_code_cf',gst_hsn_code_cf)
         if gst_hsn_code_cf:
-            pr_items=frappe.db.get_list('Purchase Receipt Item', filters={'batch_no': batch.name},fields=['gst_hsn_code', 'name'])
+            pr_items=frappe.db.get_all('Purchase Receipt Item', filters={'batch_no': batch.name},fields=['gst_hsn_code', 'name'])
             print('pr_items',pr_items)
             for pr_item in pr_items:
                 # if pr_item.gst_hsn_code!=gst_hsn_code_cf:
                 frappe.db.set_value('Purchase Receipt Item', pr_item.name, 'gst_hsn_code', gst_hsn_code_cf)
                 print("Purchase Receipt Item",pr_item.name,'gst_hsn_code', gst_hsn_code_cf)
-                pi_items=frappe.db.get_list('Purchase Invoice Item', filters={'pr_detail': pr_item.name},fields=['gst_hsn_code', 'name'])
+                pi_items=frappe.db.get_all('Purchase Invoice Item', filters={'pr_detail': pr_item.name},fields=['gst_hsn_code', 'name'])
                 print('pi_items',pi_items)
                 for pi_item in pi_items:
                     if pi_item.name :
