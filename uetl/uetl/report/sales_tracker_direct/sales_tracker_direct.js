@@ -14,8 +14,8 @@ frappe.query_reports["Sales Tracker Direct"] = {
 			label: "Sales Order Status",
 			fieldname: "so_status",
 			fieldtype: "Select",
-			options: "All\nOpen\nClosed",
-			default: "All",
+			options: "Open\nClosed\nAll",
+			default: "Open",
 		},
 		{
 			fieldname: "sales_person",
