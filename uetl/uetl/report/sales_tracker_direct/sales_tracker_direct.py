@@ -15,7 +15,6 @@ def execute(filters=None):
 
 
 def get_data(filters=None):
-
     query = """
         select 
         	tc.name customer,
@@ -214,7 +213,7 @@ def get_conditions(filters):
 
 def csv_to_columns(csv_str):
     props = ["label", "fieldname", "fieldtype", "options", "width"]
-    return [zip(props, col.split(",")) for col in csv_str.split("\n")]
+    return [dict(zip(props, col.split(","))) for col in csv_str.split("\n")]
 
 
 @frappe.whitelist()
