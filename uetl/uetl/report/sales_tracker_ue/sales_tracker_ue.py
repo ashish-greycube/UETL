@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from itertools import groupby
-from frappe.utils import cstr, cint
+from frappe.utils import cstr, cint, today, add_to_date
 
 
 def execute(filters=None):
@@ -13,7 +13,6 @@ def execute(filters=None):
 
 
 def get_data(filters=None):
-
     data = frappe.db.sql(
         """
         select 
@@ -129,6 +128,29 @@ def get_data(filters=None):
 
     if not data:
         return []
+
+    if filters.get("mr_date"):
+        data = [d for d in data if d.mr_date]
+
+    if filters.get("on_order_np") == "> 0":
+        data = [d for d in data if d.on_order_np_qty > 0]
+    elif filters.get("on_order_np") == "= 0":
+        data = [d for d in data if not d.on_order_np_qty]
+
+    if filters.get("reserved_order_qty") == "> 0":
+        data = [d for d in data if d.reserved_order_qty > 0]
+    elif filters.get("reserved_order_qty") == "= 0":
+        data = [d for d in data if not d.reserved_order_qty]
+
+    if filters.get("reserved_physical_qty") == "> 0":
+        data = [d for d in data if d.reserved_physical_qty > 0]
+    elif filters.get("reserved_physical_qty") == "= 0":
+        data = [d for d in data if not d.reserved_physical_qty]
+
+    if filters.get("sold_qty") == "> 0":
+        data = [d for d in data if d.sold_qty > 0]
+    elif filters.get("sold_qty") == "= 0":
+        data = [d for d in data if not d.sold_qty]
 
     if not cint(filters.get("hide_group_fields")):
         return data
@@ -414,4 +436,10 @@ def get_conditions(filters):
             )
         elif filters.so_status == "Closed":
             conditions.append("tso.status in ('Closed', 'Completed')")
+
+    if filters.get("mr_date") == "Yesterday":
+        conditions.append("tpri.posting_date = %s" % add_to_date(today(), days=-1))
+    if filters.get("mr_date") == "Today":
+        conditions.append("tpri.posting_date = %s" % today())
+
     return conditions and " and " + " and ".join(conditions) or ""
