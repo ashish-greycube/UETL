@@ -6,6 +6,8 @@ from frappe import _
 from itertools import groupby
 from frappe.utils import cstr, cint
 
+from uetl.uetl.report import csv_to_columns
+
 
 def execute(filters=None):
     columns, data = [], []
@@ -209,11 +211,6 @@ def get_conditions(filters):
         conditions.append("ti.brand = %(brand)s")
 
     return conditions and " and " + " and ".join(conditions) or ""
-
-
-def csv_to_columns(csv_str):
-    props = ["label", "fieldname", "fieldtype", "options", "width"]
-    return [dict(zip(props, col.split(","))) for col in csv_str.split("\n")]
 
 
 @frappe.whitelist()
