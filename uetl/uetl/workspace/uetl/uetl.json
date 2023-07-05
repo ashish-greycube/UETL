@@ -16,7 +16,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "UETL",
-   "link_count": 7,
+   "link_count": 6,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -79,19 +79,9 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Sales Tracker UE",
-   "link_count": 0,
-   "link_to": "Sales Tracker UE",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
   }
  ],
- "modified": "2023-07-04 10:06:57.289585",
+ "modified": "2023-07-05 09:36:40.329380",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "UETL",
