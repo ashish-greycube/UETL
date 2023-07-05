@@ -15,8 +15,6 @@ def execute(filters=None):
     col_fields = [d.get("fieldname") for d in columns]
     data = [dict(zip(col_fields, d)) for d in data]
 
-    print(data[:5])
-
     columns = get_columns(columns)
     if data:
         invoice_data = get_invoice_data(data) or {}
@@ -24,7 +22,6 @@ def execute(filters=None):
         for d in data:
             if d["invoice"] in invoice_data:
                 d.update(invoice_data.get(d["invoice"]))
-            print(d.get("delay_in_payment"))
 
         avg_delay = sum(d.get("delay_in_payment") for d in data) // len(data)
         total_credit = sum(d.get("credit", 0) for d in data)

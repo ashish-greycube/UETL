@@ -70,6 +70,7 @@ from
     left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf 
     left outer join (
         select parent, sales_person  from `tabSales Team` tst 
+        where parenttype = 'Sales Order'
         group by parent
     ) tst on tst.parent = tsoi.parent
     left outer join `tabSales Person` tsp on tsp.name = tst.sales_person 
@@ -77,7 +78,7 @@ from
     left outer JOIN `tabCost Center` tccp on tccp.name = tsoi.cost_center 
     left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
     left outer join `tabDelivery Note Item` tdni on tdni.against_sales_order = tso.name 
-    	and tdni.batch_no = tb.name and tdni.item_code = tb.item
+        and tdni.so_detail = tsoi.name and tdni.batch_no = tb.name and tdni.item_code = tb.item
     left outer join `tabDelivery Note` tdn on tdn.name = tdni.parent {}
 ) t    
     """.format(

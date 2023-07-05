@@ -14,7 +14,7 @@ frappe.query_reports["Sales Side"] = {
       fieldname: "doc_type",
       label: __("Document Type"),
       fieldtype: "Select",
-      options: "Sales Invoice\nSales Order",
+      options: "Sales Invoice",
       default: "Sales Invoice",
     },
     {

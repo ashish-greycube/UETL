@@ -58,8 +58,8 @@ def get_columns(columns):
             col["fieldname"] = "purchase_receipt"
 
     addnl_columns = """
-Landed Cost Voucher Amount,landed_cost_voucher_amount,,,130
-Total Cost,total_cost,,,130
+Landed Cost Voucher Amount,landed_cost_voucher_amount,Currency,,130
+Total Cost,total_cost,Currency,,130
 Rate(USD),rate_usd,,,130
 Amount(USD),amount_usd,,,130
 Date Code,date_code,,,130
