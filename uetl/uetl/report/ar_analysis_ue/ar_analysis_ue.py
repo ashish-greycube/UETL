@@ -12,16 +12,34 @@ from uetl.uetl.report.sales_tracker_direct.sales_tracker_direct import csv_to_co
 def execute(filters=None):
     columns, data = _execute(filters)
 
+    col_fields = [d.get("fieldname") for d in columns]
+    data = [dict(zip(col_fields, d)) for d in data]
+
+    print(data[:5])
+
+    columns = get_columns(columns)
     if data:
-        col_fields = [d.get("fieldname") for d in columns]
-        data = [dict(zip(col_fields, d)) for d in data]
         invoice_data = get_invoice_data(data) or {}
 
         for d in data:
             if d["invoice"] in invoice_data:
                 d.update(invoice_data.get(d["invoice"]))
+            print(d.get("delay_in_payment"))
 
-    columns = get_columns(columns)
+        avg_delay = sum(d.get("delay_in_payment") for d in data) // len(data)
+        total_credit = sum(d.get("credit", 0) for d in data)
+
+        last_row = []
+        for d in columns:
+            if d["fieldname"] == "delay_in_payment":
+                last_row.append(avg_delay)
+            elif d["fieldname"] == "credit":
+                last_row.append(total_credit)
+            else:
+                last_row.append("")
+
+        data.append(last_row)
+
     return columns, data
 
 
@@ -50,7 +68,6 @@ where tsii.parent in ({})
         ),
         tuple(invoices),
         as_dict=True,
-        debug=True,
     )
 
     return {d.sales_invoice: d for d in addnl_data}
@@ -63,7 +80,7 @@ def get_columns(columns):
         for d in columns
         if not d["fieldname"]
         in (
-            "payment_document_type",
+            "payment_document",
             "party_type",
             "debit",
             "age",

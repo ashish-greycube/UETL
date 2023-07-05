@@ -76,9 +76,9 @@ from
     left outer join `tabSales Person` tsgp on tsgp.name = tsp.parent_sales_person  
     left outer JOIN `tabCost Center` tccp on tccp.name = tsoi.cost_center 
     left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
-    left outer join `tabDelivery Note Item` tdni on tdni.against_sales_order = tso.name
-    left outer join `tabDelivery Note` tdn on tdn.name = tdni.parent 
-     {}
+    left outer join `tabDelivery Note Item` tdni on tdni.against_sales_order = tso.name 
+    	and tdni.batch_no = tb.name and tdni.item_code = tb.item
+    left outer join `tabDelivery Note` tdn on tdn.name = tdni.parent {}
 ) t    
     """.format(
             get_conditions(filters)

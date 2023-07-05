@@ -17,6 +17,9 @@ COLUMNS = (
     "description",
     "invoice",
     "posting_date",
+    "purchase_receipt",
+    "pr_date",
+    "batch_no",
     "supplier_name",
     "supplier_group",
     "supplier_country",
@@ -39,9 +42,6 @@ COLUMNS = (
     "pri_cost_center",
     "pr_currency",
     "conversion_rate",
-    "purchase_receipt",
-    "pr_date",
-    "batch_no",
 )
 
 
@@ -58,7 +58,8 @@ def get_columns(columns):
             col["fieldname"] = "purchase_receipt"
 
     addnl_columns = """
-Total Cost,total_cost,Currency,,130
+Landed Cost Voucher Amount,landed_cost_voucher_amount,,,130
+Total Cost,total_cost,,,130
 Rate(USD),rate_usd,,,130
 Amount(USD),amount_usd,,,130
 Date Code,date_code,,,130
@@ -80,8 +81,6 @@ Batch ID,batch_no,,,130
 
 
 def get_data(data):
-    print(data[:1])
-
     pr_no = [d.get("purchase_receipt") for d in data]
 
     pr_data = {
@@ -108,7 +107,11 @@ where tpr.name in ({})
     for d in data:
         d.update(pr_data.get(d.get("purchase_receipt", ""), {}))
         d.update(
-            {"total_cost": d.get("amount", 0) + d.get("landed_cost_voucher_amount", 0)}
+            {
+                "total_cost": round(
+                    d.get("amount", 0) + d.get("landed_cost_voucher_amount", 0), 2
+                )
+            }
         )
 
     return data

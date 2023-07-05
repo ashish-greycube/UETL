@@ -21,6 +21,7 @@ frappe.query_reports["Inventory Analysis UE"] = {
       label: __("Inventory Type"),
       fieldtype: "Select",
       options: "Sold\nPending\nAll",
+      default: "Sold",
     },
     {
       fieldname: "customer",

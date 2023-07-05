@@ -16,7 +16,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "UETL",
-   "link_count": 6,
+   "link_count": 7,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -79,9 +79,19 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Inventory Analysis UE",
+   "link_count": 0,
+   "link_to": "Inventory Analysis UE",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2023-07-05 09:36:40.329380",
+ "modified": "2023-07-05 13:03:13.870355",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "UETL",
