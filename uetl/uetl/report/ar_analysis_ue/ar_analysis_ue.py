@@ -15,10 +15,11 @@ def execute(filters=None):
     if data:
         col_fields = [d.get("fieldname") for d in columns]
         data = [dict(zip(col_fields, d)) for d in data]
-        invoice_data = get_invoice_data(data)
+        invoice_data = get_invoice_data(data) or {}
 
-    for d in data:
-        d.update(invoice_data.get(d["invoice"]))
+        for d in data:
+            if d["invoice"] in invoice_data:
+                d.update(invoice_data.get(d["invoice"]))
 
     columns = get_columns(columns)
     return columns, data
@@ -49,6 +50,7 @@ where tsii.parent in ({})
         ),
         tuple(invoices),
         as_dict=True,
+        debug=True,
     )
 
     return {d.sales_invoice: d for d in addnl_data}
