@@ -55,7 +55,7 @@ from
 (
 	select 
         ti.item_code , ti.item_name , ti.item_group , 
-        tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name ,
+        tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
         tpr.posting_date pr_date , tpri.received_qty , tdni.qty sold_qty , tdn.posting_date dn_date , 
         tpri.received_qty - tdni.qty  balance_qty ,
         tpri.base_rate , tpri.received_qty * tpri.base_rate amount ,
@@ -89,9 +89,9 @@ from
     )
 
     if filters.inventory_type == "Sold":
-        data = [d for d in data if d.balance_qty == 0]
+        data = [d for d in data if d.batch_qty == 0]
     if filters.inventory_type == "Pending":
-        data = [d for d in data if not d.balance_qty == 0]
+        data = [d for d in data if not d.batch_qty == 0]
     if filters.customer:
         data = [d for d in data if d.customer == filters.customer]
     if filters.cost_center:
