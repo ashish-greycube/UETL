@@ -74,14 +74,8 @@ def set_sales_order_reference(self, method):
                     % (sales_order, sales_order_item)
                 )
                 if sales_order and sales_order_item:
-                    frappe.db.set_value(
-                        d.doctype,
-                        d.name,
-                        {
-                            "sales_order_cf": sales_order,
-                            "sales_order_item_cf": sales_order_item,
-                        },
-                    )
+                    d.sales_order_cf = sales_order
+                    d.sales_order_item_cf = sales_order_item
 
     if self.doctype == "Batch":
         if self.reference_doctype == "Purchase Receipt" and self.reference_name:
