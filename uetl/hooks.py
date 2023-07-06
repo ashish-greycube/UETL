@@ -113,7 +113,7 @@ doc_events = {
         ]
     },
     "Purchase Receipt": {
-        "after_insert": "uetl.doc_events.set_sales_order_reference",
+        "before_insert": "uetl.doc_events.set_sales_order_reference",
         "on_submit": "uetl.doc_events.update_batch_for_hsn_code",
     },
     "Batch": {

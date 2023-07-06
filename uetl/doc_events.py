@@ -60,7 +60,7 @@ def update_gst_hsn_code_cf_based_on_batch_no(self, method):
 
 
 def set_sales_order_reference(self, method):
-    frappe.log_error("Purchase Receipt: set_sales_order_reference hook")
+    frappe.log_error("Purchase Receipt: set_sales_order_reference %s hook" % method)
     if self.doctype == "Purchase Receipt":
         for d in self.items:
             if d.purchase_order and d.purchase_order_item:
