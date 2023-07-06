@@ -50,7 +50,7 @@ def get_data(filters):
         """
 select * , 
 	case when t.sold_qty = 0 then DATEDIFF(%(today)s, t.pr_date)
-		else datediff(t.pr_date,t.dn_date) end age_in_days
+		else datediff(t.dn_date,t.pr_date) end age_in_days
 from
 (
 	select 
