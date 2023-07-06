@@ -49,7 +49,7 @@ def get_data(filters):
     data = frappe.db.sql(
         """
 select * , 
-	case when t.balance_qty > 0 then DATEDIFF(%(today)s, t.pr_date)
+	case when t.sold_qty = 0 then DATEDIFF(%(today)s, t.pr_date)
 		else datediff(t.pr_date,t.dn_date) end age_in_days
 from
 (

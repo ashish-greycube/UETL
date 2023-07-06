@@ -15,11 +15,11 @@ def execute(filters=None):
     for d in data:
         d.billing_month = d.posting_date.strftime("%b")
 
-    return get_columns(), data
+    return get_columns(columns), data
 
 
-def get_columns():
-    return [
+def get_columns(columns):
+    return columns + [
         {
             "label": "Billing Month",
             "fieldname": "billing_month",
@@ -45,12 +45,6 @@ def get_columns():
             "width": "140",
         },
         {
-            "label": "Requested ship date (CRD)",
-            "fieldname": "delivery_date",
-            "fieldtype": "Date",
-            "width": "190",
-        },
-        {
             "label": "Payment term (Sales)",
             "fieldname": "payment_terms_template",
             "fieldtype": "Link",
@@ -60,7 +54,8 @@ def get_columns():
         {
             "label": "Batch ID",
             "fieldname": "batch_no",
-            "fieldtype": "Data",
+            "fieldtype": "Link",
+            "options": "Batch",
             "width": "140",
         },
         {
@@ -73,19 +68,6 @@ def get_columns():
             "label": "Purchaser",
             "fieldname": "purchaser_cf",
             "fieldtype": "Data",
-            "width": "140",
-        },
-        {
-            "label": "Sales Invoice",
-            "fieldname": "name",
-            "fieldtype": "Link",
-            "options": "Sales Invoice",
-            "width": "140",
-        },
-        {
-            "label": "Posting Date",
-            "fieldname": "posting_date",
-            "fieldtype": "Date",
             "width": "140",
         },
     ]
