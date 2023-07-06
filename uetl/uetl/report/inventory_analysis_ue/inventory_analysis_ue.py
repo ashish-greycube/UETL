@@ -57,8 +57,7 @@ from
 	select 
         ti.item_code , ti.item_name , ti.item_group , 
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
-        tpr.posting_date pr_date , tpri.received_qty , tdni.qty sold_qty , tdn.posting_date dn_date , 
-        tpri.received_qty - tdni.qty  balance_qty ,
+        tpr.posting_date pr_date , tpri.received_qty , tdni.stock_qty sold_qty , tdn.posting_date dn_date , 
         tpri.base_rate , tpri.received_qty * tpri.base_rate amount ,
         tsoi.purchaser_cf , tso.customer ,
         tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
@@ -109,7 +108,7 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date <= %(to_date)s")
 
     if filters.inventory_type == "Sold":
-        conditions.append("coalesce(tdni.qty,0) > 0 and tb.batch_qty = 0")
+        conditions.append("coalesce(tdni.stock_qty,0) > 0 and tb.batch_qty = 0")
     if filters.inventory_type == "Pending":
         conditions.append("tb.batch_qty <> 0")
 
