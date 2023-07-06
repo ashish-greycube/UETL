@@ -67,6 +67,7 @@ from
     inner join tabItem ti on ti.name = tb.item 
     left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
     left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
+        and tpri.item_code = tb.item and tpri.batch_no = tb.name
     left outer join `tabSales Order Item` tsoi on tsoi.name = tpri.sales_order_item_cf
     left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf 
     left outer join (
@@ -108,7 +109,7 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date <= %(to_date)s")
 
     if filters.inventory_type == "Sold":
-        conditions.append("tb.batch_qty = 0")
+        conditions.append("coalesce(tdni.qty,0) > 0 and tb.batch_qty = 0")
     if filters.inventory_type == "Pending":
         conditions.append("tb.batch_qty <> 0")
 
