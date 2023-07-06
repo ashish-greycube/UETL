@@ -32,8 +32,8 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {
-	"Sales Order" : "public/js/filter_cost_center.js",	
-	}
+    "Sales Order": "public/js/filter_cost_center.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -46,7 +46,7 @@ doctype_js = {
 
 # website user home page (by Role)
 # role_home_page = {
-#	"Role": "home_page"
+# 	"Role": "home_page"
 # }
 
 # Generators
@@ -97,33 +97,36 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 doc_events = {
-	"Sales Order": {
-		"validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
-	},
-	"Purchase Order": {
-		"validate": ["uetl.doc_events.validate_for_duplicate_items_based_on_date",
-		"uetl.doc_events.validate_so_reference_in_item"	]		
-	},
-	"Delivery Note": {
-		"validate": ["uetl.doc_events.set_cost_center_based_on_sales_order",
-		"uetl.doc_events.update_gst_hsn_code_cf_based_on_batch_no"
-		]
-	},
-	"Purchase Receipt": {
-		"after_insert":"uetl.doc_events.set_sales_order_reference",
-		"on_submit":"uetl.doc_events.update_batch_for_hsn_code"
-	},
-	"Batch": {
-		"after_insert":"uetl.doc_events.set_sales_order_reference",
-		"on_update":"uetl.doc_events.update_batch_no_to_purchase_receipt"
-	}				
+    "Sales Order": {
+        "validate": "uetl.doc_events.validate_for_duplicate_items_based_on_date"
+    },
+    "Purchase Order": {
+        "validate": [
+            "uetl.doc_events.validate_for_duplicate_items_based_on_date",
+            "uetl.doc_events.validate_so_reference_in_item",
+        ]
+    },
+    "Delivery Note": {
+        "validate": [
+            "uetl.doc_events.set_cost_center_based_on_sales_order",
+            "uetl.doc_events.update_gst_hsn_code_cf_based_on_batch_no",
+        ]
+    },
+    "Purchase Receipt": {
+        "after_insert": "uetl.doc_events.set_sales_order_reference",
+        "on_submit": "uetl.doc_events.update_batch_for_hsn_code",
+    },
+    "Batch": {
+        "after_insert": "uetl.doc_events.set_sales_order_reference",
+        "on_update": "uetl.doc_events.update_batch_no_to_purchase_receipt",
+    },
 }
 # doc_events = {
 # 	"*": {
 # 		"on_update": "method",
 # 		"on_cancel": "method",
 # 		"on_trash": "method"
-#	}
+# 	}
 # }
 
 # Scheduled Tasks
@@ -175,24 +178,22 @@ doc_events = {
 # --------------------
 
 user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
+    {
+        "doctype": "{doctype_1}",
+        "filter_by": "{filter_by}",
+        "redact_fields": ["{field_1}", "{field_2}"],
+        "partial": 1,
+    },
+    {
+        "doctype": "{doctype_2}",
+        "filter_by": "{filter_by}",
+        "partial": 1,
+    },
+    {
+        "doctype": "{doctype_3}",
+        "strict": False,
+    },
+    {"doctype": "{doctype_4}"},
 ]
 
 # Authentication and authorization
@@ -201,4 +202,3 @@ user_data_fields = [
 # auth_hooks = [
 # 	"uetl.auth.validate"
 # ]
-
