@@ -11,6 +11,6 @@ def execute():
         set 
             tpri.sales_order_cf = tpoi.sales_order , 
             tpri.sales_order_item_cf = tpoi.sales_order_item
-        where tpri.sales_order_item_cf  is null 
+        where nullif(tpri.sales_order_item_cf,'')  is null 
                   """
     )
