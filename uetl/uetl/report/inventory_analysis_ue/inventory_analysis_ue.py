@@ -21,12 +21,13 @@ def get_columns():
     Item Code,item_code,Link/Item,,200
     Item Name,item_name,,,200
     Item Group,item_group,,,130
-    Batch,batch_id,,,110
+    Batch,batch_id,Link,Batch,110
     Supplier,supplier,,,120
     Purchase Receipt,reference_name,Link/Purchase Receipt,,130
     Purchase Receipt Date,pr_date,Date,,130
     Received Qty,received_qty,Float,,130
     Sold Qty,sold_qty,Float,,130
+    Batch Qty,batch_qty,Float,,130
     Sold Date,dn_date,Date,,120
     Balance Quantity,balance_qty,Float,,130
     Age (in Days),age_in_days,Int,,130
@@ -88,10 +89,6 @@ from
         as_dict=True,
     )
 
-    if filters.inventory_type == "Sold":
-        data = [d for d in data if d.batch_qty == 0]
-    if filters.inventory_type == "Pending":
-        data = [d for d in data if not d.batch_qty == 0]
     if filters.customer:
         data = [d for d in data if d.customer == filters.customer]
     if filters.cost_center:
@@ -109,5 +106,10 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date >= %(from_date)s")
     if filters.to_date:
         conditions.append("tpr.posting_date <= %(to_date)s")
+
+    if filters.inventory_type == "Sold":
+        conditions.append("tb.batch_qty = 0")
+    if filters.inventory_type == "Pending":
+        conditions.append("tb.batch_qty <> 0")
 
     return conditions and " where " + " and ".join(conditions) or ""
