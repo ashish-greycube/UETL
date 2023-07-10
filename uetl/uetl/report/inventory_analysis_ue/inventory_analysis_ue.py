@@ -21,25 +21,27 @@ def get_columns():
     Item Code,item_code,Link/Item,,200
     Item Name,item_name,,,200
     Item Group,item_group,,,130
+    Brand,brand,,,130
     Batch,batch_id,Link,Batch,110
     Supplier,supplier,,,120
     Purchase Receipt,reference_name,Link/Purchase Receipt,,130
     Purchase Receipt Date,pr_date,Date,,130
     Received Qty,received_qty,Float,,130
     Sold Qty,sold_qty,Float,,130
-    Batch Qty,batch_qty,Float,,130
+    Sold Rate,sold_rate,Currency,,120
+    Sold Amount,sold_amount,Currency,,120
+    Batch Balance Qty,batch_qty,Float,,130
     Sold Date,dn_date,Date,,120
-    Balance Quantity,balance_qty,Float,,130
     Age (in Days),age_in_days,Int,,130
-    Rate,base_rate,Currency,,130
-    Amount({}),amount,Currency,,130
+    Rate,base_net_rate,Currency,,130
+    Batch Amount({}),amount,Currency,,130
     Cost Center,cost_center,,,130
     Purchaser,purchaser_cf,,,120
     Sales Person,sales_person,,,150
     BU Product Team,grand_parent_cost_center,,<150
     BU Product,parent_cost_center,,,150
-    RSM Team,parent_cost_center,,,150
-    BU Sales,grand_parent_cost_center,,,150
+    RSM Team,parent_sales_person,,,150
+    BU Sales,grand_parent_sales_person,,,150
     """.format(
         get_default_currency()
     )
@@ -55,10 +57,11 @@ select * ,
 from
 (
 	select 
-        ti.item_code , ti.item_name , ti.item_group , 
+        ti.item_code , ti.item_name , ti.item_group , ti.brand ,
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
         tpr.posting_date pr_date , tpri.received_qty , tdni.stock_qty sold_qty , tdn.posting_date dn_date , 
-        tpri.base_rate , tpri.received_qty * tpri.base_rate amount ,
+        tpri.base_net_rate , tb.batch_qty * tpri.base_net_rate batch_amount ,
+        tsoi.base_net_rate sold_rate , tsoi.stock_qty * tsoi.base_net_rate sold_amount ,
         tsoi.purchaser_cf , tso.customer ,
         tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
         tsoi.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 

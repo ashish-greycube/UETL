@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe.utils import date_diff
 
 from erpnext.accounts.report.payment_period_based_on_invoice_date.payment_period_based_on_invoice_date import (
     execute as _execute,
@@ -22,6 +23,11 @@ def execute(filters=None):
         for d in data:
             if d["invoice"] in invoice_data:
                 d.update(invoice_data.get(d["invoice"]))
+
+            if d.get("posting_date") and d.get("invoice_posting_date"):
+                d["sales_invoice_delay"] = date_diff(
+                    d.get("posting_date"), d.get("invoice_posting_date")
+                )
 
         avg_delay = sum(d.get("delay_in_payment") for d in data) // len(data)
         total_credit = sum(d.get("credit", 0) for d in data)
@@ -47,10 +53,11 @@ def get_invoice_data(data):
     addnl_data = frappe.db.sql(
         """
 select
-    tsii.parent sales_invoice,
+    tsii.parent sales_invoice, tsi.payment_terms_template , tsi.posting_date ,
     tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
     tsii.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center
 from `tabSales Invoice Item` tsii 
+    inner join `tabSales Invoice` tsi on tsi.name = tsii.parent
     left outer join (
         select parent, sales_person  from `tabSales Team` tst 
         group by parent
@@ -92,10 +99,12 @@ def get_columns(columns):
     additional_columns = [
         "Cost Center,cost_center,,,150",
         "Sales Person,sales_person,,,150",
-        "BU Product Team,grand_parent_cost_center,,<150",
+        "BU Product Team,grand_parent_cost_center,,150",
         "BU Product,parent_cost_center,,,150",
-        "RSM Team,parent_cost_center,,,150",
-        "BU Sales,grand_parent_cost_center,,,150",
+        "RSM Team,parent_sales_person,,,150",
+        "BU Sales,grand_parent_sales_person,,,150",
+        "Payment Terms,payment_terms_template,,,180",
+        "Delay based on Invoice Date,invoice_delay,Int,,130",
     ]
 
     return columns + csv_to_columns("\n".join(additional_columns))
