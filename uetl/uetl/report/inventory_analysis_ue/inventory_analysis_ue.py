@@ -34,7 +34,7 @@ def get_columns():
     Sold Date,dn_date,Date,,120
     Age (in Days),age_in_days,Int,,130
     Rate,base_net_rate,Currency,,130
-    Batch Amount({}),amount,Currency,,130
+    Batch Amount({}),batch_amount,Currency,,130
     Cost Center,cost_center,,,130
     Purchaser,purchaser_cf,,,120
     Sales Person,sales_person,,,150
@@ -55,13 +55,13 @@ select * ,
 	case when t.sold_qty = 0 then DATEDIFF(%(today)s, t.pr_date)
 		else datediff(t.dn_date,t.pr_date) end age_in_days
 from
-(
-	select 
+(  
+    select
         ti.item_code , ti.item_name , ti.item_group , ti.brand ,
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
-        tpr.posting_date pr_date , tpri.received_qty , tdni.stock_qty sold_qty , tdn.posting_date dn_date , 
+        tpr.posting_date pr_date , tpri.received_qty , tdn.posting_date dn_date , 
         tpri.base_net_rate , tb.batch_qty * tpri.base_net_rate batch_amount ,
-        tsoi.base_net_rate sold_rate , tsoi.stock_qty * tsoi.base_net_rate sold_amount ,
+        tsoi.stock_qty sold_qty , tsoi.base_net_rate sold_rate , tsoi.stock_qty * tsoi.base_net_rate sold_amount ,
         tsoi.purchaser_cf , tso.customer ,
         tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
         tsoi.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 

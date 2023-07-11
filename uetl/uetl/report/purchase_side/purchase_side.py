@@ -79,6 +79,7 @@ COLUMNS = (
     "item_group",
     "brand",
     "description",
+    "sales_order_cf",
     "invoice",
     "posting_date",
     "purchase_receipt",
@@ -136,6 +137,7 @@ Supplier Payment Terms,supplier_payment_terms,,,180
 Item Brand,brand,,,130
 BU Product,pri_parent_cost_center,,130
 BU Product Team,pri_grand_parent_cost_center,,,130
+Sales Order,sales_order_cf,Link,Sales Order,130
     """
     col_dict = {
         d["fieldname"]: d
@@ -160,7 +162,8 @@ select
 	ts.payment_terms supplier_payment_terms , ts.supplier_group , ts.country supplier_country ,
     tpo.transaction_date po_posting_date , ti.brand ,
     tccp.parent_cost_center pri_parent_cost_center, 
-    tccgp.parent_cost_center pri_grand_parent_cost_center
+    tccgp.parent_cost_center pri_grand_parent_cost_center ,
+    tpri.sales_order_cf
 from `tabPurchase Receipt` tpr 
 inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name 
 inner join `tabItem` ti on ti.name = tpri.item_code
