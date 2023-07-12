@@ -28,13 +28,13 @@ def get_columns(columns):
         },
         {
             "label": "Parent customer name",
-            "fieldname": "parent_customer",
+            "fieldname": "parent_customer_cf",
             "fieldtype": "Data",
             "width": "140",
         },
         {
             "label": "Customer ID",
-            "fieldname": "customer_id",
+            "fieldname": "customer_id_cf",
             "fieldtype": "Data",
             "width": "140",
         },
