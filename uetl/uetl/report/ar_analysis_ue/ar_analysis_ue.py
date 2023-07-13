@@ -28,22 +28,32 @@ def execute(filters=None):
                 d["sales_invoice_delay"] = date_diff(
                     d.get("posting_date"), d.get("invoice_posting_date")
                 )
-
-        avg_delay = sum(d.get("delay_in_payment") for d in data) // len(data)
-        total_credit = sum(d.get("credit", 0) for d in data)
-
-        last_row = []
-        for d in columns:
-            if d["fieldname"] == "delay_in_payment":
-                last_row.append(avg_delay)
-            elif d["fieldname"] == "credit":
-                last_row.append(total_credit)
-            else:
-                last_row.append("")
-
-        data.append(last_row)
+        data = remove_cancelled_payment_entries(data)
+        data.append(get_totals(columns, data))
 
     return columns, data
+
+
+def remove_cancelled_payment_entries(data):
+    """filter out cancelled Payment Entries, till issue is fixed in Erpnext payment_period_based_on_invoice_date"""
+    cancelled = frappe.db.sql_list(
+        "select name from `tabPayment Entry` where docstatus = 2"
+    )
+    return [d for d in data if not d["payment_entry"] in cancelled]
+
+
+def get_totals(columns, data):
+    avg_delay = sum(d.get("delay_in_payment") for d in data) // len(data)
+    total_credit = sum(d.get("credit", 0) for d in data)
+    last_row = []
+    for d in columns:
+        if d["fieldname"] == "delay_in_payment":
+            last_row.append(avg_delay)
+        elif d["fieldname"] == "credit":
+            last_row.append(total_credit)
+        else:
+            last_row.append("")
+    return last_row
 
 
 def get_invoice_data(data):
@@ -53,9 +63,8 @@ def get_invoice_data(data):
     addnl_data = frappe.db.sql(
         """
 select
-    tsii.parent sales_invoice, tsi.payment_terms_template , tsi.posting_date ,
-    tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
-    tsii.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center
+    tsii.parent sales_invoice, tsi.payment_terms_template , 
+    tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person 
 from `tabSales Invoice Item` tsii 
     inner join `tabSales Invoice` tsi on tsi.name = tsii.parent
     left outer join (
@@ -64,8 +73,6 @@ from `tabSales Invoice Item` tsii
     ) tst on tst.parent = tsii.parent
     left outer join `tabSales Person` tsp on tsp.name = tst.sales_person 
     left outer join `tabSales Person` tsgp on tsgp.name = tsp.parent_sales_person  
-    left outer JOIN `tabCost Center` tccp on tccp.name = tsii.cost_center 
-    left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
 where tsii.parent in ({})
     """.format(
             ", ".join(["%s"] * len(invoices))
@@ -97,14 +104,23 @@ def get_columns(columns):
     ]
 
     additional_columns = [
-        "Cost Center,cost_center,,,150",
         "Sales Person,sales_person,,,150",
-        "BU Product Team,grand_parent_cost_center,,150",
-        "BU Product,parent_cost_center,,,150",
         "RSM Team,parent_sales_person,,,150",
         "BU Sales,grand_parent_sales_person,,,150",
         "Payment Terms,payment_terms_template,,,180",
-        "Delay based on Invoice Date,invoice_delay,Int,,130",
     ]
 
-    return columns + csv_to_columns("\n".join(additional_columns))
+    out = []
+
+    for d in columns:
+        out.append(d)
+        if d["fieldname"] == "delay_in_payment":
+            out.append(
+                {
+                    "fieldname": "sales_invoice_delay",
+                    "label": "Delay based on Invoice Date (Days)",
+                    "fieldtype": "Int",
+                    "width": 130,
+                }
+            )
+    return out + csv_to_columns("\n".join(additional_columns))

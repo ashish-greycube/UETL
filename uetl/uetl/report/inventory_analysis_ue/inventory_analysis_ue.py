@@ -33,6 +33,7 @@ def get_columns():
     Batch Balance Qty,batch_qty,Float,,130
     Sold Date,dn_date,Date,,120
     Age (in Days),age_in_days,Int,,130
+    Batch Balance Age (in Days),batch_balance_age,Int,,130
     Rate,base_net_rate,Currency,,130
     Batch Amount({}),batch_amount,Currency,,130
     Cost Center,cost_center,,,130
@@ -52,8 +53,11 @@ def get_data(filters):
     data = frappe.db.sql(
         """
 select * , 
-	case when t.sold_qty = 0 then DATEDIFF(%(today)s, t.pr_date)
-		else datediff(t.dn_date,t.pr_date) end age_in_days
+	case 
+        when t.batch_qty = 0 then DATEDIFF(%(today)s, t.pr_date)
+        when t.sold_qty > 0 then datediff(t.dn_date,t.pr_date) 
+        else datediff(%(today)s,t.pr_date) end age_in_days ,
+    datediff(%(today)s,t.pr_date) batch_balance_age
 from
 (  
     select
@@ -61,7 +65,7 @@ from
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
         tpr.posting_date pr_date , tpri.received_qty , tdn.posting_date dn_date , 
         tpri.base_net_rate , tb.batch_qty * tpri.base_net_rate batch_amount ,
-        tsoi.stock_qty sold_qty , tsoi.base_net_rate sold_rate , tsoi.stock_qty * tsoi.base_net_rate sold_amount ,
+        tdni.stock_qty sold_qty , tdni.base_net_rate sold_rate , tdni.stock_qty * tdni.base_net_rate sold_amount ,
         tsoi.purchaser_cf , tso.customer ,
         tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
         tsoi.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 

@@ -131,7 +131,7 @@ def get_entries(filters):
                 left outer join `tabSales Person` bu on bu.name = (select parent_sales_person from `tabSales Person` x where x.name = rsm.name)
                 left outer join `tabCost Center` tcc on tcc.name = tsoi.cost_center  
                 left outer join `tabCost Center` tcc_gp on tcc_gp.name = tcc.parent_cost_center  
-                left outer join tabAddress ta on ta.name = tc.customer_primary_address 
+                left outer join tabAddress ta on ta.name = dt.customer_address
             WHERE
                 dt.docstatus = 1 %s order by st.sales_person, dt.name desc
             """
