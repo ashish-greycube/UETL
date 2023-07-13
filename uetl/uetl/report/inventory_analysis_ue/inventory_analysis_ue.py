@@ -57,10 +57,12 @@ def get_data(filters):
         """
 select * , 
 	case 
-        when t.batch_qty = 0 then DATEDIFF(%(today)s, t.pr_date)
+        when t.batch_qty = 0 then DATEDIFF(t.dn_date, t.pr_date)
         when t.sold_qty > 0 then datediff(t.dn_date,t.pr_date) 
         else datediff(%(today)s,t.pr_date) end age_in_days ,
-    datediff(%(today)s,t.pr_date) batch_balance_age
+    case when t.batch_qty > 0
+        then datediff(%(today)s,t.pr_date) 
+        else null end batch_balance_age
 from
 (  
     select
