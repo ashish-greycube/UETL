@@ -11,11 +11,11 @@ from uetl.uetl.report import csv_to_columns
 def execute(filters=None):
     filters["today"] = today()
 
-    columns, data = get_columns(), get_data(filters)
+    columns, data = get_columns(filters), get_data(filters)
     return columns, data
 
 
-def get_columns():
+def get_columns(filters):
     columns = """
     Customer,customer,Link/Customer,,140
     Item Code,item_code,Link/Item,,200
@@ -46,7 +46,10 @@ def get_columns():
     """.format(
         get_default_currency()
     )
-    return csv_to_columns(columns)
+    columns = csv_to_columns(columns)
+    if filters.inventory_type == "Sold":
+        columns = [d for d in columns if not d["fieldname"] == "batch_balance_age"]
+    return columns
 
 
 def get_data(filters):
