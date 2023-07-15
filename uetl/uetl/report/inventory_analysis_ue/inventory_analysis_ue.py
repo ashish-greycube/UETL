@@ -26,7 +26,7 @@ def get_columns(filters):
     Supplier,supplier,,,120
     Purchase Receipt,reference_name,Link/Purchase Receipt,,130
     Purchase Receipt Date,pr_date,Date,,130
-    Received Qty,received_qty,Float,,130
+    Received Qty,received_stock_qty,Float,,130
     Sold Qty,sold_qty,Float,,130
     Sold Rate,sold_rate,Currency,,120
     Sold Amount,sold_amount,Currency,,120
@@ -34,7 +34,7 @@ def get_columns(filters):
     Sold Date,dn_date,Date,,120
     Age (in Days),age_in_days,Int,,130
     Batch Balance Age (in Days),batch_balance_age,Int,,130
-    Rate,base_net_rate,Currency,,130
+    Rate,base_rate,Currency,,130
     Batch Amount({}),batch_amount,Currency,,130
     Cost Center,cost_center,,,130
     Purchaser,purchaser_cf,,,120
@@ -68,18 +68,20 @@ from
     select
         ti.item_code , ti.item_name , ti.item_group , ti.brand ,
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
-        tpr.posting_date pr_date , tpri.received_qty , tdn.posting_date dn_date , 
-        tpri.base_net_rate , tb.batch_qty * tpri.base_net_rate batch_amount ,
-        tdni.stock_qty sold_qty , tdni.base_net_rate sold_rate , tdni.stock_qty * tdni.base_net_rate sold_amount ,
+        tpr.posting_date pr_date , tpri.received_stock_qty , tdn.posting_date dn_date , 
+        tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
+        tdni.stock_qty sold_qty , tdni.base_rate sold_rate , tdni.stock_qty * tdni.base_rate sold_amount ,
         tsoi.purchaser_cf , tso.customer ,
         tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
         tsoi.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 
     from tabBatch tb 
     inner join tabItem ti on ti.name = tb.item 
     left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
+        and tpr.docstatus = 1
     left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
-        and tpri.item_code = tb.item and tpri.batch_no = tb.name
+        and tpri.item_code = tb.item and tpri.batch_no = tb.name 
     left outer join `tabSales Order Item` tsoi on tsoi.name = tpri.sales_order_item_cf
+        and tsoi.item_code = tpri.item_code and tsoi.docstatus = 1
     left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf 
     left outer join (
         select parent, sales_person  from `tabSales Team` tst 
@@ -92,6 +94,7 @@ from
     left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
     left outer join `tabDelivery Note Item` tdni on tdni.against_sales_order = tso.name 
         and tdni.so_detail = tsoi.name and tdni.batch_no = tb.name and tdni.item_code = tb.item
+        and tdni.docstatus = 1
     left outer join `tabDelivery Note` tdn on tdn.name = tdni.parent {}
 ) t    
     """.format(

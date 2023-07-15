@@ -43,14 +43,18 @@ def remove_cancelled_payment_entries(data):
 
 
 def get_totals(columns, data):
-    avg_delay = sum(d.get("delay_in_payment") for d in data) // len(data)
-    total_credit = sum(d.get("credit", 0) for d in data)
     last_row = []
     for d in columns:
         if d["fieldname"] == "delay_in_payment":
-            last_row.append(avg_delay)
+            last_row.append(
+                sum(d.get("delay_in_payment", 0) for d in data) // len(data)
+            )
         elif d["fieldname"] == "credit":
-            last_row.append(total_credit)
+            last_row.append(sum(d.get("credit", 0) for d in data))
+        elif d["fieldname"] == "sales_invoice_delay":
+            last_row.append(
+                sum(d.get("sales_invoice_delay", 0) for d in data) // len(data)
+            )
         else:
             last_row.append("")
     return last_row
