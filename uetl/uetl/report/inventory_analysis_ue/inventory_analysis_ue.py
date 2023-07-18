@@ -68,12 +68,13 @@ def get_data(filters):
      	inner join `tabDelivery Note` tdn on tdn.name = tdni.parent
      	left outer join `tabSales Order Item` tsoi on tsoi.name = tdni.so_detail 
      		and tsoi.parent = tdni.against_sales_order
+            and tsoi.docstatus = 1
 	    left outer join (
 	        select parent, sales_person  from `tabSales Team` tst 
 	        where parenttype = 'Sales Order'
 	        group by parent
 	    ) tst on tst.parent = tsoi.parent     		
-     	where nullif(tdni.batch_no,'') is not null
+     	where tdn.docstatus = 1 and nullif(tdni.batch_no,'') is not null
      	group by tdni.batch_no , tdni.item_code , tdn.customer ,
      	tsoi.cost_center , tsoi.purchaser_cf , tst.sales_person
 	) dn_so
