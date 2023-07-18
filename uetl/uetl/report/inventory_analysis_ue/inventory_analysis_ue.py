@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import today
+from frappe.utils import today, date_diff
 from erpnext import get_default_currency
 
 from uetl.uetl.report import csv_to_columns
@@ -53,37 +53,16 @@ def get_columns(filters):
 
 
 def get_data(filters):
-    data = frappe.db.sql(
+    dn_so = frappe.db.sql(
         """
-select * , 
-	case 
-        when t.batch_qty = 0 then DATEDIFF(t.dn_date, t.pr_date)
-        when t.sold_qty > 0 then datediff(t.dn_date,t.pr_date) 
-        else datediff(%(today)s,t.pr_date) end age_in_days ,
-    case when t.batch_qty > 0
-        then datediff(%(today)s,t.pr_date) 
-        else null end batch_balance_age
-from
-(  
-    select 
-	    ti.item_code , ti.item_name , ti.item_group , ti.brand ,
-        tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
-        tpr.posting_date pr_date , tpri.received_stock_qty , dn_so.posting_date dn_date , 
-        tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
-        dn_so.sold_qty , dn_so.sold_rate , dn_so.sold_amount ,
-        dn_so.purchaser_cf , dn_so.customer ,
-        dn_so.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
-        dn_so.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 
-        from tabBatch tb 
-    inner join tabItem ti on ti.name = tb.item 
-    left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
-        and tpr.docstatus = 1
-    left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
-        and tpri.item_code = tb.item and tpri.batch_no = tb.name 
-    left outer join (
+    select dn_so.* ,
+        tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
+        tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 
+    from
+    (
 		select tdni.batch_no , tdni.item_code , tdn.customer , 
         tsoi.cost_center , tsoi.purchaser_cf , tst.sales_person ,
-        max(tdn.posting_date) posting_date , sum(tdni.stock_qty) sold_qty ,
+        max(tdn.posting_date) dn_date , sum(tdni.stock_qty) sold_qty ,
         avg(tdni.base_rate) sold_rate , sum(tdni.stock_qty * tdni.base_rate) sold_amount
      	from `tabDelivery Note Item` tdni
      	inner join `tabDelivery Note` tdn on tdn.name = tdni.parent
@@ -97,13 +76,29 @@ from
      	where nullif(tdni.batch_no,'') is not null
      	group by tdni.batch_no , tdni.item_code , tdn.customer ,
      	tsoi.cost_center , tsoi.purchaser_cf , tst.sales_person
-  	) dn_so on dn_so.batch_no = tb.name and dn_so.item_code = tb.item
+	) dn_so
     left outer join `tabSales Person` tsp on tsp.name = dn_so.sales_person 
     left outer join `tabSales Person` tsgp on tsgp.name = tsp.parent_sales_person  
     left outer JOIN `tabCost Center` tccp on tccp.name = dn_so.cost_center 
     left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
- {}
-) t    
+                          """,
+        as_dict=True,
+    )
+    dn_so = {(d.batch_no, d.item_code): d for d in dn_so}
+
+    batch_data = frappe.db.sql(
+        """
+    select 
+	    ti.item_code , ti.item_name , ti.item_group , ti.brand ,
+        tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
+        tpr.posting_date pr_date , tpri.received_stock_qty , 
+        tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount 
+        from tabBatch tb 
+    inner join tabItem ti on ti.name = tb.item 
+    left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
+        and tpr.docstatus = 1
+    left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
+        and tpri.item_code = tb.item and tpri.batch_no = tb.name  {}
     """.format(
             get_conditions(filters)
         ),
@@ -111,12 +106,31 @@ from
         as_dict=True,
     )
 
+    for d in batch_data:
+        d.update(dn_so.get((d.batch_id, d.item_code), {}))
+        # age in days
+        if not d.batch_qty or d.sold_qty:
+            d["age_in_days"] = date_diff(d.dn_date, d.pr_date)
+        else:
+            d["age_in_days"] = date_diff(today(), d.pr_date)
+        # batch_balance_age
+        if d.batch_qty:
+            d["batch_balance_age"] = date_diff(today(), d.pr_date)
+
+    return apply_filters(batch_data, filters)
+
+
+def apply_filters(data, filters):
     if filters.customer:
         data = [d for d in data if d.customer == filters.customer]
     if filters.cost_center:
         data = [d for d in data if d.cost_center == filters.cost_center]
     if filters.sales_person:
         data = [d for d in data if d.sales_person == filters.sales_person]
+    if filters.inventory_type == "Sold":
+        data = [d for d in data if d.sold_qty and not d.batch_qty]
+    if filters.inventory_type == "Pending":
+        data = [d for d in data if d.batch_qty]
 
     return data
 
@@ -128,10 +142,5 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date >= %(from_date)s")
     if filters.to_date:
         conditions.append("tpr.posting_date <= %(to_date)s")
-
-    if filters.inventory_type == "Sold":
-        conditions.append("coalesce(dn_so.sold_qty,0) > 0 and tb.batch_qty = 0")
-    if filters.inventory_type == "Pending":
-        conditions.append("tb.batch_qty <> 0")
 
     return conditions and " where " + " and ".join(conditions) or ""
