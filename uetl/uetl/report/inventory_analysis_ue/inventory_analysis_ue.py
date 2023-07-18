@@ -65,37 +65,44 @@ select * ,
         else null end batch_balance_age
 from
 (  
-    select
-        ti.item_code , ti.item_name , ti.item_group , ti.brand ,
+    select 
+	    ti.item_code , ti.item_name , ti.item_group , ti.brand ,
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
-        tpr.posting_date pr_date , tpri.received_stock_qty , tdn.posting_date dn_date , 
+        tpr.posting_date pr_date , tpri.received_stock_qty , dn_so.posting_date dn_date , 
         tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
-        tdni.stock_qty sold_qty , tdni.base_rate sold_rate , tdni.stock_qty * tdni.base_rate sold_amount ,
-        tsoi.purchaser_cf , tso.customer ,
-        tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
-        tsoi.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 
-    from tabBatch tb 
+        dn_so.sold_qty , dn_so.sold_rate , dn_so.sold_amount ,
+        dn_so.purchaser_cf , dn_so.customer ,
+        dn_so.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
+        dn_so.cost_center , tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 
+        from tabBatch tb 
     inner join tabItem ti on ti.name = tb.item 
     left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
         and tpr.docstatus = 1
     left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
         and tpri.item_code = tb.item and tpri.batch_no = tb.name 
-    left outer join `tabSales Order Item` tsoi on tsoi.name = tpri.sales_order_item_cf
-        and tsoi.item_code = tpri.item_code and tsoi.docstatus = 1
-    left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf 
     left outer join (
-        select parent, sales_person  from `tabSales Team` tst 
-        where parenttype = 'Sales Order'
-        group by parent
-    ) tst on tst.parent = tsoi.parent
-    left outer join `tabSales Person` tsp on tsp.name = tst.sales_person 
+		select tdni.batch_no , tdni.item_code , tdn.customer , 
+        tsoi.cost_center , tsoi.purchaser_cf , tst.sales_person ,
+        max(tdn.posting_date) posting_date , sum(tdni.stock_qty) sold_qty ,
+        avg(tdni.base_rate) sold_rate , sum(tdni.stock_qty * tdni.base_rate) sold_amount
+     	from `tabDelivery Note Item` tdni
+     	inner join `tabDelivery Note` tdn on tdn.name = tdni.parent
+     	left outer join `tabSales Order Item` tsoi on tsoi.name = tdni.so_detail 
+     		and tsoi.parent = tdni.against_sales_order
+	    left outer join (
+	        select parent, sales_person  from `tabSales Team` tst 
+	        where parenttype = 'Sales Order'
+	        group by parent
+	    ) tst on tst.parent = tsoi.parent     		
+     	where nullif(tdni.batch_no,'') is not null
+     	group by tdni.batch_no , tdni.item_code , tdn.customer ,
+     	tsoi.cost_center , tsoi.purchaser_cf , tst.sales_person
+  	) dn_so on dn_so.batch_no = tb.name and dn_so.item_code = tb.item
+    left outer join `tabSales Person` tsp on tsp.name = dn_so.sales_person 
     left outer join `tabSales Person` tsgp on tsgp.name = tsp.parent_sales_person  
-    left outer JOIN `tabCost Center` tccp on tccp.name = tsoi.cost_center 
+    left outer JOIN `tabCost Center` tccp on tccp.name = dn_so.cost_center 
     left outer JOIN `tabCost Center` tccgp on tccgp.name = tccp.parent_cost_center 
-    left outer join `tabDelivery Note Item` tdni on tdni.against_sales_order = tso.name 
-        and tdni.so_detail = tsoi.name and tdni.batch_no = tb.name and tdni.item_code = tb.item
-        and tdni.docstatus = 1
-    left outer join `tabDelivery Note` tdn on tdn.name = tdni.parent {}
+ {}
 ) t    
     """.format(
             get_conditions(filters)
@@ -123,7 +130,7 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date <= %(to_date)s")
 
     if filters.inventory_type == "Sold":
-        conditions.append("coalesce(tdni.stock_qty,0) > 0 and tb.batch_qty = 0")
+        conditions.append("coalesce(dn_so.sold_qty,0) > 0 and tb.batch_qty = 0")
     if filters.inventory_type == "Pending":
         conditions.append("tb.batch_qty <> 0")
 
