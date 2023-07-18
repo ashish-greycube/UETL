@@ -116,18 +116,22 @@ def get_entries(filters):
             dt.customer_group , tsoi.business_type_cf , tsoi.cost_center , tcc.parent_cost_center , 
             tcc_gp.parent_cost_center g_parent_cost_center , dt_item.item_group , tc.industry , 
             DATE(tsoi.creation) so_date ,
-            dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf
+            dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf ,
+            dt_item.batch_no , dt_item.batch_no , dt.payment_terms_template , dt_item.uom ,tsoi.purchaser_cf , 
+            tso.delivery_date , ta.country , tc.parent_customer_name_cf , tc.customer_id_cf
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 
                 inner join `tabSales Team` st on st.parent = dt.name and st.parenttype = 'Sales Invoice'
                 inner join tabCustomer tc on tc.name = dt.customer
                 left outer join `tabSales Order Item` tsoi on tsoi.parent = dt_item.sales_order and tsoi.name = dt_item.so_detail 
+                left outer join `tabSales Order` tso on tso.name = tsoi.parent
                 left outer join tabBrand tb on tb.name = dt_item.brand 
                 left outer join `tabSales Person` rsm on rsm.name = (select parent_sales_person from `tabSales Person` x where x.name = st.sales_person)
                 left outer join `tabSales Person` bu on bu.name = (select parent_sales_person from `tabSales Person` x where x.name = rsm.name)
                 left outer join `tabCost Center` tcc on tcc.name = tsoi.cost_center  
                 left outer join `tabCost Center` tcc_gp on tcc_gp.name = tcc.parent_cost_center  
+                left outer join tabAddress ta on ta.name = dt.customer_address
             WHERE
                 dt.docstatus = 1 %s order by st.sales_person, dt.name desc
             """

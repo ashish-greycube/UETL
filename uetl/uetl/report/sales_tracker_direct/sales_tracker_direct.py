@@ -4,7 +4,9 @@
 import frappe
 from frappe import _
 from itertools import groupby
-from frappe.utils import cstr, cint
+from frappe.utils import cstr, cint, add_to_date, today
+
+from uetl.uetl.report import csv_to_columns
 
 
 def execute(filters=None):
@@ -15,7 +17,6 @@ def execute(filters=None):
 
 
 def get_data(filters=None):
-
     query = """
         select 
         	tc.name customer,
@@ -177,6 +178,20 @@ def get_data(filters=None):
         value = filters.get("upg")
         data = [d for d in data if value == d.unified_product_group_cf]
 
+    if filters.get("mr_date"):
+        data = [d for d in data if d.mr_date]
+
+    for field in (
+        "on_order_np_qty",
+        "reserved_order_qty",
+        "reserved_physical_qty",
+        "sold_qty",
+    ):
+        if filters.get(field) == "> 0":
+            data = [d for d in data if d.get(field) > 0]
+        elif filters.get(field) == "= 0":
+            data = [d for d in data if d.get(field) == 0]
+
     return data or []
 
 
@@ -209,12 +224,13 @@ def get_conditions(filters):
     if filters.get("brand") and not cint(filters.get("hide_group_fields")):
         conditions.append("ti.brand = %(brand)s")
 
+    if filters.get("mr_date") == "Yesterday":
+        conditions.append("tpri.posting_date = %s" % add_to_date(today(), days=-1))
+
+    if filters.get("mr_date") == "Today":
+        conditions.append("tpri.posting_date = %s" % today())
+
     return conditions and " and " + " and ".join(conditions) or ""
-
-
-def csv_to_columns(csv_str):
-    props = ["label", "fieldname", "fieldtype", "options", "width"]
-    return [zip(props, col.split(",")) for col in csv_str.split("\n")]
 
 
 @frappe.whitelist()

@@ -1,7 +1,8 @@
 {
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">UETL</span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"UETL\",\"col\":4}}]",
+ "content": "[{\"id\":\"nEeTJN_rjF\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">UETL</span>\",\"col\":12}},{\"id\":\"cp_7v6v2Be\",\"type\":\"card\",\"data\":{\"card_name\":\"UETL\",\"col\":4}}]",
  "creation": "2023-02-16 15:54:35.854295",
+ "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
@@ -15,7 +16,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "UETL",
-   "link_count": 3,
+   "link_count": 7,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -48,12 +49,53 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "AR Analysis UE",
+   "link_count": 0,
+   "link_to": "AR Analysis UE",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Purchase Side",
+   "link_count": 0,
+   "link_to": "Purchase Side",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Sales Side",
+   "link_count": 0,
+   "link_to": "Sales Side",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Inventory Analysis UE",
+   "link_count": 0,
+   "link_to": "Inventory Analysis UE",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2023-02-16 16:03:57.389574",
+ "modified": "2023-07-05 13:03:13.870355",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "UETL",
+ "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
