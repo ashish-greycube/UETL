@@ -36,9 +36,6 @@ def execute(filters=None):
                 width=120,
             ),
             dict(
-                fieldtype="Data", label="HSN Code", fieldname="gst_hsn_code", width=120
-            ),
-            dict(
                 fieldtype="Data",
                 label="Supplier Invoice No",
                 fieldname="bill_no",
@@ -50,20 +47,17 @@ def execute(filters=None):
                 fieldname="bill_date",
                 width=100,
             ),
-        ],
-        additional_query_columns=[
-            "supplier_gstin",
-            "company_gstin",
-            "is_reverse_charge",
-            "gst_category",
-            "gst_hsn_code",
-            "bill_no",
-            "bill_date",
-            "pr_detail",
+            dict({"_doctype": "Purchase Invoice", "fieldname": "supplier_gstin"}),
+            dict({"_doctype": "Purchase Invoice", "fieldname": "company_gstin"}),
+            dict({"_doctype": "Purchase Invoice", "fieldname": "is_reverse_charge"}),
+            dict({"_doctype": "Purchase Invoice", "fieldname": "gst_category"}),
+            dict({"_doctype": "Purchase Invoice", "fieldname": "bill_no"}),
+            dict({"_doctype": "Purchase Invoice", "fieldname": "bill_date"}),
+            dict({"_doctype": "Purchase Invoice Item", "fieldname": "pr_detail"}),
         ],
     )
 
-    columns = get_columns(columns)
+    columns = [d for d in get_columns(columns) if not d.get("_doctype")]
 
     data = get_data(data, filters)
 
@@ -138,6 +132,7 @@ Item Brand,brand,,,130
 BU Product,pri_parent_cost_center,,130
 BU Product Team,pri_grand_parent_cost_center,,,130
 Sales Order,sales_order_cf,Link,Sales Order,130
+HSN Code,gst_hsn_code,,,120
     """
     col_dict = {
         d["fieldname"]: d
@@ -163,7 +158,7 @@ select
     tpo.transaction_date po_posting_date , ti.brand ,
     tccp.parent_cost_center pri_parent_cost_center, 
     tccgp.parent_cost_center pri_grand_parent_cost_center ,
-    tpri.sales_order_cf
+    tpri.sales_order_cf , tpri.gst_hsn_code
 from `tabPurchase Receipt` tpr 
 inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name 
 inner join `tabItem` ti on ti.name = tpri.item_code
