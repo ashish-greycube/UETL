@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "Standard",
- "modified": "2023-07-05 16:31:45.422906",
+ "modified": "2023-07-19 14:26:43.132082",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "Inventory Analysis UE",
@@ -19,5 +19,30 @@
  "ref_doctype": "Batch",
  "report_name": "Inventory Analysis UE",
  "report_type": "Script Report",
- "roles": []
+ "roles": [
+  {
+   "role": "Maintenance User"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "UET Sales Taker"
+  },
+  {
+   "role": "UET Shipment Manager"
+  }
+ ]
 }

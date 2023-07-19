@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "Standard",
- "modified": "2023-07-03 16:16:10.954276",
+ "modified": "2023-07-19 14:29:49.436396",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "Sales Side",
@@ -19,5 +19,24 @@
  "ref_doctype": "Sales Invoice",
  "report_name": "Sales Side",
  "report_type": "Script Report",
- "roles": []
+ "roles": [
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "UET Sales Taker"
+  },
+  {
+   "role": "UET Sales Tracker User"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

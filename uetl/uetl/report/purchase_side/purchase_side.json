@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "Standard",
- "modified": "2023-07-03 17:58:41.212208",
+ "modified": "2023-07-19 14:28:57.747969",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "Purchase Side",
@@ -19,5 +19,21 @@
  "ref_doctype": "Purchase Invoice",
  "report_name": "Purchase Side",
  "report_type": "Script Report",
- "roles": []
+ "roles": [
+  {
+   "role": "Purchase User"
+  },
+  {
+   "role": "Purchase Manager"
+  },
+  {
+   "role": "UET PO Creator"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }
