@@ -60,7 +60,7 @@ def get_data(filters):
         tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center 
     from
     (
-		select tdni.batch_no , tdni.item_code , tdn.customer , 
+		select tdni.batch_no , tdni.item_code , 
         tsoi.cost_center , tsoi.purchaser_cf , tst.sales_person ,
         max(tdn.posting_date) dn_date , sum(tdni.stock_qty) sold_qty ,
         avg(tdni.base_rate) sold_rate , sum(tdni.stock_qty * tdni.base_rate) sold_amount
@@ -93,13 +93,16 @@ def get_data(filters):
 	    ti.item_code , ti.item_name , ti.item_group , ti.brand ,
         tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
         tpr.posting_date pr_date , tpri.received_stock_qty , 
-        tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount 
+        tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
+        tso.customer
         from tabBatch tb 
     inner join tabItem ti on ti.name = tb.item 
     left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
         and tpr.docstatus = 1
     left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
-        and tpri.item_code = tb.item and tpri.batch_no = tb.name  {}
+        and tpri.item_code = tb.item and tpri.batch_no = tb.name
+    left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf
+    {}
     """.format(
             get_conditions(filters)
         ),
