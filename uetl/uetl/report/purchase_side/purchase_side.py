@@ -2,69 +2,61 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
+from frappe.utils import flt
+from uetl.uetl.report import csv_to_columns
+
 from erpnext.accounts.report.item_wise_purchase_register.item_wise_purchase_register import (
     _execute,
 )
 
+from india_compliance.gst_india.report.gst_purchase_register.gst_purchase_register import (
+    get_additional_table_columns as get_pi_columns,
+)
+
 
 def execute(filters=None):
-    columns, data, *others = _execute(
-        filters,
-        additional_table_columns=[
-            dict(
-                fieldtype="Data",
-                label="Supplier GSTIN",
-                fieldname="supplier_gstin",
-                width=120,
-            ),
-            dict(
-                fieldtype="Data",
-                label="Company GSTIN",
-                fieldname="company_gstin",
-                width=120,
-            ),
-            dict(
-                fieldtype="Check",
-                label="Is Reverse Charge",
-                fieldname="is_reverse_charge",
-                width=120,
-            ),
-            dict(
-                fieldtype="Data",
-                label="GST Category",
-                fieldname="gst_category",
-                width=120,
-            ),
-            dict(
-                fieldtype="Data",
-                label="Supplier Invoice No",
-                fieldname="bill_no",
-                width=120,
-            ),
-            dict(
-                fieldtype="Date",
-                label="Supplier Invoice Date",
-                fieldname="bill_date",
-                width=100,
-            ),
-            dict({"_doctype": "Purchase Invoice", "fieldname": "supplier_gstin"}),
-            dict({"_doctype": "Purchase Invoice", "fieldname": "company_gstin"}),
-            dict({"_doctype": "Purchase Invoice", "fieldname": "is_reverse_charge"}),
-            dict({"_doctype": "Purchase Invoice", "fieldname": "gst_category"}),
-            dict({"_doctype": "Purchase Invoice", "fieldname": "bill_no"}),
-            dict({"_doctype": "Purchase Invoice", "fieldname": "bill_date"}),
-            dict({"_doctype": "Purchase Invoice Item", "fieldname": "pr_detail"}),
-        ],
-    )
-
-    columns = [d for d in get_columns(columns) if not d.get("_doctype")]
-
+    columns, data, *others = _execute(filters, get_additional_table_columns())
+    columns = [d for d in get_columns(columns)]
     data = get_data(data, filters)
 
     return columns, data
 
 
-from uetl.uetl.report import csv_to_columns
+def get_additional_table_columns():
+    additional_table_columns = get_pi_columns()
+
+    for row in additional_table_columns:
+        row["_doctype"] = "Purchase Invoice"
+
+    additional_table_columns.extend(
+        [
+            {
+                "fieldtype": "Data",
+                "label": _("HSN Code"),
+                "fieldname": "gst_hsn_code",
+                "width": 120,
+                "_doctype": "Purchase Invoice Item",
+            },
+            {
+                "fieldtype": "Data",
+                "label": _("Supplier Invoice No"),
+                "fieldname": "bill_no",
+                "width": 120,
+                "_doctype": "Purchase Invoice",
+            },
+            {
+                "fieldtype": "Date",
+                "label": _("Supplier Invoice Date"),
+                "fieldname": "bill_date",
+                "width": 100,
+                "_doctype": "Purchase Invoice",
+            },
+            {"_doctype": "Purchase Invoice Item", "fieldname": "pr_detail"},
+        ]
+    )
+
+    return additional_table_columns
 
 
 COLUMNS = (
@@ -140,7 +132,12 @@ HSN Code,gst_hsn_code,,,120
         if d["fieldname"] in COLUMNS
     }
 
-    return [col_dict[d] for d in COLUMNS if d in col_dict]
+    columns = [col_dict[d] for d in COLUMNS if d in col_dict]
+
+    for d in (d for d in columns if d["fieldname"] in ("bill_no", "bill_date")):
+        d["width"] = 160
+
+    return columns
 
 
 def get_data(data, filters):

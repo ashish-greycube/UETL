@@ -89,19 +89,43 @@ def get_data(filters):
 
     batch_data = frappe.db.sql(
         """
-    select 
-	    ti.item_code , ti.item_name , ti.item_group , ti.brand ,
-        tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
-        tpr.posting_date pr_date , tpri.received_stock_qty , 
-        tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
-        tso.customer
-        from tabBatch tb 
-    inner join tabItem ti on ti.name = tb.item 
-    left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
-        and tpr.docstatus = 1
-    left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
-        and tpri.item_code = tb.item and tpri.batch_no = tb.name
-    left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf
+with fn as (
+	select ta.name cost_center, ta.parent_cost_center parent_cost_center , 
+    tb.parent_cost_center grand_parent_cost_center
+	from `tabCost Center` ta
+	inner join `tabCost Center` tb on tb.name = ta.parent_cost_center 
+) ,
+fn2 as (
+    select ta.name sales_person , ta.parent_sales_person parent_sales_person,
+    tb.parent_sales_person grand_parent_sales_person
+    from  `tabSales Person` ta 
+    left outer join `tabSales Person` tb on tb.name = ta.parent_sales_person  
+)
+select fn.* , fn2.* ,
+    ti.item_code , ti.item_name , ti.item_group , ti.brand ,
+    tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
+    tpr.posting_date pr_date , tpri.received_stock_qty , 
+    tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
+    tso.customer
+    from tabBatch tb 
+inner join tabItem ti on ti.name = tb.item 
+left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
+    and tpr.docstatus = 1
+left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
+    and tpri.item_code = tb.item and tpri.batch_no = tb.name
+left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf
+left outer join (
+    select parent, sales_person  from `tabSales Team` tst 
+    where parenttype = 'Sales Order'
+    group by parent
+) tst on tst.parent = tso.name     		
+left outer join (
+	select parent , cost_center from `tabSales Order Item` tsoi 
+	where nullif(cost_center,'') is not null
+	group by parent 
+) tsoi on tsoi.parent = tso.name
+left outer join fn on fn.cost_center = tsoi.cost_center 
+left outer join fn2 on fn2.sales_person = tst.sales_person 
     {}
     """.format(
             get_conditions(filters)
