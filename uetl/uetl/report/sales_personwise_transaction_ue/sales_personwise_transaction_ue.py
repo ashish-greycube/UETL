@@ -115,7 +115,7 @@ def get_entries(filters):
             tb.unified_product_group_cf , dt.status , rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
             dt.customer_group , tsoi.business_type_cf , tsoi.cost_center , tcc.parent_cost_center , 
             tcc_gp.parent_cost_center g_parent_cost_center , dt_item.item_group , tc.industry , 
-            DATE(tsoi.creation) so_date ,
+            DATE(tsoi.creation) so_date , tsoi.delivery_date tsoi_delivery_date ,
             dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf ,
             dt_item.batch_no , dt_item.batch_no , dt.payment_terms_template , dt_item.uom ,tsoi.purchaser_cf , 
             tso.delivery_date , ta.country , tc.parent_customer_name_cf , tc.customer_id_cf

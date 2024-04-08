@@ -2,75 +2,61 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
+from frappe.utils import flt
+from uetl.uetl.report import csv_to_columns
+
 from erpnext.accounts.report.item_wise_purchase_register.item_wise_purchase_register import (
     _execute,
 )
 
+from india_compliance.gst_india.report.gst_purchase_register.gst_purchase_register import (
+    get_additional_table_columns as get_pi_columns,
+)
+
 
 def execute(filters=None):
-    columns, data, *others = _execute(
-        filters,
-        additional_table_columns=[
-            dict(
-                fieldtype="Data",
-                label="Supplier GSTIN",
-                fieldname="supplier_gstin",
-                width=120,
-            ),
-            dict(
-                fieldtype="Data",
-                label="Company GSTIN",
-                fieldname="company_gstin",
-                width=120,
-            ),
-            dict(
-                fieldtype="Check",
-                label="Is Reverse Charge",
-                fieldname="is_reverse_charge",
-                width=120,
-            ),
-            dict(
-                fieldtype="Data",
-                label="GST Category",
-                fieldname="gst_category",
-                width=120,
-            ),
-            dict(
-                fieldtype="Data", label="HSN Code", fieldname="gst_hsn_code", width=120
-            ),
-            dict(
-                fieldtype="Data",
-                label="Supplier Invoice No",
-                fieldname="bill_no",
-                width=120,
-            ),
-            dict(
-                fieldtype="Date",
-                label="Supplier Invoice Date",
-                fieldname="bill_date",
-                width=100,
-            ),
-        ],
-        additional_query_columns=[
-            "supplier_gstin",
-            "company_gstin",
-            "is_reverse_charge",
-            "gst_category",
-            "gst_hsn_code",
-            "bill_no",
-            "bill_date",
-            "pr_detail",
-        ],
-    )
-
-    columns = get_columns(columns)
-
+    columns, data, *others = _execute(filters, get_additional_table_columns())
+    columns = [d for d in get_columns(columns)]
     data = get_data(data, filters)
 
     return columns, data
 
 
-from uetl.uetl.report import csv_to_columns
+def get_additional_table_columns():
+    additional_table_columns = get_pi_columns()
+
+    for row in additional_table_columns:
+        row["_doctype"] = "Purchase Invoice"
+
+    additional_table_columns.extend(
+        [
+            {
+                "fieldtype": "Data",
+                "label": _("HSN Code"),
+                "fieldname": "gst_hsn_code",
+                "width": 120,
+                "_doctype": "Purchase Invoice Item",
+            },
+            {
+                "fieldtype": "Data",
+                "label": _("Supplier Invoice No"),
+                "fieldname": "bill_no",
+                "width": 120,
+                "_doctype": "Purchase Invoice",
+            },
+            {
+                "fieldtype": "Date",
+                "label": _("Supplier Invoice Date"),
+                "fieldname": "bill_date",
+                "width": 100,
+                "_doctype": "Purchase Invoice",
+            },
+            {"_doctype": "Purchase Invoice Item", "fieldname": "pr_detail"},
+        ]
+    )
+
+    return additional_table_columns
 
 
 COLUMNS = (
@@ -138,6 +124,7 @@ Item Brand,brand,,,130
 BU Product,pri_parent_cost_center,,130
 BU Product Team,pri_grand_parent_cost_center,,,130
 Sales Order,sales_order_cf,Link,Sales Order,130
+HSN Code,gst_hsn_code,,,120
     """
     col_dict = {
         d["fieldname"]: d
@@ -145,7 +132,12 @@ Sales Order,sales_order_cf,Link,Sales Order,130
         if d["fieldname"] in COLUMNS
     }
 
-    return [col_dict[d] for d in COLUMNS if d in col_dict]
+    columns = [col_dict[d] for d in COLUMNS if d in col_dict]
+
+    for d in (d for d in columns if d["fieldname"] in ("bill_no", "bill_date")):
+        d["width"] = 160
+
+    return columns
 
 
 def get_data(data, filters):
@@ -163,7 +155,7 @@ select
     tpo.transaction_date po_posting_date , ti.brand ,
     tccp.parent_cost_center pri_parent_cost_center, 
     tccgp.parent_cost_center pri_grand_parent_cost_center ,
-    tpri.sales_order_cf
+    tpri.sales_order_cf , tpri.gst_hsn_code
 from `tabPurchase Receipt` tpr 
 inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name 
 inner join `tabItem` ti on ti.name = tpri.item_code

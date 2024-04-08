@@ -45,6 +45,12 @@ def get_columns(columns):
             "width": "140",
         },
         {
+            "label": "Requested ship date (CRD)",
+            "fieldname": "tsoi_delivery_date",
+            "fieldtype": "Date",
+            "width": "130",
+        },
+        {
             "label": "Payment term (Sales)",
             "fieldname": "payment_terms_template",
             "fieldtype": "Link",
