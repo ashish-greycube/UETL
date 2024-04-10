@@ -110,7 +110,8 @@ doc_events = {
         "validate": [
             "uetl.doc_events.set_cost_center_based_on_sales_order",
             "uetl.doc_events.update_gst_hsn_code_cf_based_on_batch_no",
-        ]
+        ],
+        "on_submit": "uetl.doc_events.update_gst_hsn_code_cf_based_on_batch_no"
     },
     "Purchase Receipt": {
         "before_insert": "uetl.doc_events.set_sales_order_reference",

@@ -40,24 +40,33 @@ def set_cost_center_based_on_sales_order(self, method):
 
 
 def update_gst_hsn_code_cf_based_on_batch_no(self, method):
+    if method=='on_submit':
+        self.reload()
     for item in self.items:
-        print(
-            "-" * 10,
-            "update_gst_hsn_code_cf_based_on_batch_no",
-            "item.batch_no",
-            item.batch_no,
-        )
         if item.batch_no:
-            item.gst_hsn_code = frappe.db.get_value(
-                "Batch", item.batch_no, "gst_hsn_code_cf"
-            )
-            frappe.msgprint(
-                _("HSN/SAC Code {0} is updated for <b> row {1} : Item {2}</b>").format(
-                    item.gst_hsn_code, item.idx, item.item_code
-                ),
-                alert=1,
-            )
-
+            gst_hsn_code_cf=frappe.db.get_value("Batch", item.batch_no, "gst_hsn_code_cf")
+            date_code_cf=frappe.db.get_value("Batch", item.batch_no, "date_code_cf")
+            country_of_origin_cf=frappe.db.get_value("Batch", item.batch_no, "country_of_origin_cf")
+            if item.gst_hsn_code  and item.gst_hsn_code !=gst_hsn_code_cf and method=='on_submit':
+                frappe.db.set_value(item.doctype, item.name, 'gst_hsn_code', gst_hsn_code_cf)
+                frappe.db.set_value(item.doctype, item.name, 'date_code_cf', date_code_cf)
+                frappe.db.set_value(item.doctype, item.name, 'country_of_origin_cf', country_of_origin_cf)
+                frappe.msgprint(
+                    _("HSN/SAC Code {0} is updated for <b> row {1} : Item {2}</b>").format(
+                        item.gst_hsn_code, item.idx, item.item_code
+                    ),
+                    alert=1,
+                )
+            if item.gst_hsn_code  and item.gst_hsn_code !=gst_hsn_code_cf and method=='validate':
+                item.gst_hsn_code=gst_hsn_code_cf
+                item.date_code_cf=date_code_cf
+                item.country_of_origin_cf=country_of_origin_cf
+                frappe.msgprint(
+                    _("HSN / SAC Code {0} is saved for <b> row {1} : Item {2}</b>").format(
+                        item.gst_hsn_code, item.idx, item.item_code
+                    ),
+                    alert=1,
+                )
 
 def set_sales_order_reference(self, method):
     frappe.log_error("Purchase Receipt: set_sales_order_reference %s hook" % method)
@@ -107,8 +116,8 @@ def set_sales_order_reference(self, method):
 
 
 def update_batch_for_hsn_code(self, method):
+    self.reload()
     for item in self.items:
-        print("-" * 10, "update_batch_for_hsn_code", "item.batch_no", item.batch_no)
         if item.batch_no:
             batch_no = frappe.get_doc("Batch", item.batch_no)
             batch_no.date_code_cf = item.date_code_cf
