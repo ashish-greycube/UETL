@@ -28,7 +28,7 @@ def get_data(filters=None):
             tsoi.cpo_line_no_cf as cpo_line_no_cf,
             tsoi.external_part_no_cf as external_part_no_cf,
             tsoi.item_name item_number, tsoi.item_code , tsoi.item_group ,
-            tsoi.brand mfr, 
+            ti.brand mfr, 
             tsoi.stock_qty cpo_qty,
             tsoi.stock_qty - tsoi.ordered_qty on_order_np_qty ,
             tsoi.ordered_qty - coalesce(tpoi.received_qty,0) reserved_order_qty ,
