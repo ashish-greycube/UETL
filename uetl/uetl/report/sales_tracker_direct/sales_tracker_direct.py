@@ -360,7 +360,7 @@ from
     tsoi.item_group,
     tsoi.item_name item_number,
     unified_product_group_cf,
-    tsoi.brand mfr,
+    ti.brand mfr,
 	tso.currency,
     tsoi.purchaser_cf purchaser,
     group_concat(distinct tsoi.cost_center) tsoi_cost_center ,
