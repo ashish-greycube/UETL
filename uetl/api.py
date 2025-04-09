@@ -92,6 +92,7 @@ def get_report_as_csv(**filters):
 def get_report_filter(field_name, report_name=None, party_type=None):
     """
     return filter values for fieldname to match desk report filters
+    Note: for Party link field, pass in field_name as Party Type . i.e. customer, supplier, student etc
     """
 
     frappe.set_user("Administrator")
@@ -121,21 +122,18 @@ def get_report_filter(field_name, report_name=None, party_type=None):
             "inventory_type": ["Sold", "Pending", "All"],
         }.get(field_name)
     elif report_name == "Accounts Receivable":
-        if field_name == "party":
-            values = frappe.db.get_link_options(party_type or "Customer", "")
-        else:
-            values = {
-                "ageing_based_on": ["Posting Date", "Due Date"],
-                "party_type": ["Customer", "Student"],
-                "group_by_party": check_values,
-                "based_on_payment_terms": check_values,
-                "show_future_payments": check_values,
-                "show_delivery_notes": check_values,
-                "show_sales_person": check_values,
-                "show_remarks": check_values,
-                "for_revaluation_journals": check_values,
-                "ignore_accounts": check_values,
-                "in_party_currency": check_values,
-            }.get(field_name)
+        values = {
+            "ageing_based_on": ["Posting Date", "Due Date"],
+            "party_type": ["Customer", "Student"],
+            "group_by_party": check_values,
+            "based_on_payment_terms": check_values,
+            "show_future_payments": check_values,
+            "show_delivery_notes": check_values,
+            "show_sales_person": check_values,
+            "show_remarks": check_values,
+            "for_revaluation_journals": check_values,
+            "ignore_accounts": check_values,
+            "in_party_currency": check_values,
+        }.get(field_name)
 
     return values or []
