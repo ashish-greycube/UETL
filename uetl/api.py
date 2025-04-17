@@ -90,22 +90,25 @@ def get_report_as_csv(**filters):
 
 @frappe.whitelist(allow_guest=False)
 def get_report_filter(field_name, report_name=None, party_type=None):
+
     """
     return filter values for fieldname to match desk report filters
-    Note: for Party link field, pass in field_name as Party Type . i.e. customer, supplier, student etc
-    """
+    Note: for Party link field for customer, pass in {"field_name":"party", "party_type":"Customer"} """
 
     frappe.set_user("Administrator")
 
+    if field_name == "party":
+        field_name = party_type
+
     # commonly handle Link fields
     if frappe.db.exists("DocType", frappe.unscrub(field_name)):
-        search_link(
-            frappe.unscrub(field_name),
+        return frappe.call(
+            "frappe.desk.search.search_link",
+            doctype= frappe.unscrub(field_name),
             txt="",
             ignore_user_permissions=True,
             page_length=1000,
         )
-        return frappe.response.get("results")
 
     values = []
 

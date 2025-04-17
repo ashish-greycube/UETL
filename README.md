@@ -8,6 +8,29 @@ MIT
 
 <hr>
 
+### API for Reports as CSV
+
+``` 
+curl --request GET \
+  --url https://<site_url>/api/method/uetl.api.get_report_as_csv \
+  --header 'authorization: {{authorization}}' \
+  --header 'content-type: application/json' \
+  --data '{
+  "report_name": "Sales Personwise Transaction UE",
+  "company": "",
+  "customer": "",
+  "doc_type": "Sales Order",
+  "sales_person": "",
+  "territory": "",
+  "from_date": "01-09-2023",
+  "to_date": "2025-04-17",
+  "item_group":"",
+  "brand":"PANASONIC",
+  "cost_center":"",
+  "show_return_entries":""
+}' 
+```
+
 #### Contact Us  
 
 <a href="https://greycube.in"><img src="https://greycube.in/files/greycube_logo09eade.jpg" width="250" height="auto"></a> <br>
