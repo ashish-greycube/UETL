@@ -41,5 +41,11 @@ frappe.query_reports["Inventory Analysis UE"] = {
       fieldtype: "Link",
       options: "Cost Center",
     },
+    {
+      fieldname: "warehouse",
+      label: __("Warehouse"),
+      fieldtype: "Link",
+      options: "Warehouse",
+    },
   ],
 };

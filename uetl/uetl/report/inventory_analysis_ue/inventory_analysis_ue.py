@@ -23,6 +23,7 @@ def get_columns(filters):
     Item Group,item_group,,,130
     Brand,brand,,,130
     Batch,batch_id,Link,Batch,110
+    Warehouse,batch_warehouse,Link,Warehouse,130
     Supplier,supplier,,,120
     Purchase Receipt,reference_name,Link/Purchase Receipt,,130
     Purchase Receipt Date,pr_date,Date,,130
@@ -103,7 +104,8 @@ fn2 as (
 )
 select fn.* , fn2.* ,
     ti.item_code , ti.item_name , ti.item_group , ti.brand ,
-    tb.batch_id , tb.supplier , tb.reference_doctype , tb.reference_name , tb.batch_qty ,
+    tb.batch_id , tpri.warehouse batch_warehouse , tb.supplier , 
+    tb.reference_doctype , tb.reference_name , tb.batch_qty ,
     tpr.posting_date pr_date , tpri.received_stock_qty , 
     tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
     tso.customer
@@ -170,5 +172,8 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date >= %(from_date)s")
     if filters.to_date:
         conditions.append("tpr.posting_date <= %(to_date)s")
+    if filters.warehouse:
+        conditions.append("tpri.warehouse = %(warehouse)s")
+
 
     return conditions and " where " + " and ".join(conditions) or ""
