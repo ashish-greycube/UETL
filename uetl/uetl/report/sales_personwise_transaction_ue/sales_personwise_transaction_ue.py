@@ -65,20 +65,21 @@ def get_entries(filters):
                         ELSE dt_item.base_net_amount * st.allocated_percentage/100
                 END as contribution_amt ,
                 dt.customer , dt.contact_display , dt.po_no , dt.po_date , dt_item.external_part_no_cf , 
-                dt_item.item_name , dt_item.item_group , dt_item.brand , tb.unified_product_group_cf , dt.status so_status ,
+                dt_item.item_name , dt_item.item_group , ti.brand , tb.unified_product_group_cf , dt.status so_status ,
                 tc.industry , tc.territory , tc.customer_group , dt.delivery_status , dt.billing_status ,
-                tsi.name sales_invoice , tsi.posting_date sales_invoice_date ,
+                -- tsi.name sales_invoice , tsi.posting_date sales_invoice_date ,
                 rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
                 dt_item.business_type_cf , dt_item.cost_center , tcc.parent_cost_center , tcc_gp.parent_cost_center g_parent_cost_center ,
                 dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf
             FROM                                                                                                                  
                 `tabSales Order` dt
                 inner join `tabSales Order Item` dt_item on dt_item.parent = dt.name
+                inner join `tabItem` ti on ti.name = dt_item.item_code
                 inner join `tabSales Team` st on st.parent = dt.name and st.parenttype = 'Sales Order'    
                 inner join tabCustomer tc on tc.name = dt.customer
                 left outer join tabBrand tb on tb.name = dt_item.brand 
-                left outer join `tabSales Invoice Item` tsii on tsii.sales_order = dt.name and tsii.so_detail = dt_item.name
-                left outer join `tabSales Invoice` tsi on tsi.name = tsii.parent
+                -- left outer join `tabSales Invoice Item` tsii on tsii.sales_order = dt.name and tsii.so_detail = dt_item.name
+                -- left outer join `tabSales Invoice` tsi on tsi.name = tsii.parent
                 left outer join `tabSales Person` rsm on rsm.name = (select parent_sales_person from `tabSales Person` x where x.name = st.sales_person)
                 left outer join `tabSales Person` bu on bu.name = (select parent_sales_person from `tabSales Person` x where x.name = rsm.name)                
                 left outer join `tabCost Center` tcc on tcc.name = dt_item.cost_center  
