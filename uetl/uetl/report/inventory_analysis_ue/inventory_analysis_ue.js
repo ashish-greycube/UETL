@@ -8,7 +8,7 @@ frappe.query_reports["Inventory Analysis UE"] = {
       fieldname: "from_date",
       label: __("From Date on PR"),
       fieldtype: "Date",
-      default: frappe.defaults.get_user_default("year_start_date"),
+      default: erpnext.utils.get_fiscal_year(frappe.datetime.get_today(), true)[1],
     },
     {
       fieldname: "to_date",
@@ -21,7 +21,7 @@ frappe.query_reports["Inventory Analysis UE"] = {
       label: __("Inventory Type"),
       fieldtype: "Select",
       options: "Sold\nPending\nAll",
-      default: "Sold",
+      default: "Pending",
     },
     {
       fieldname: "customer",

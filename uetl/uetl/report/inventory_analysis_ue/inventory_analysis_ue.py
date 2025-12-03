@@ -18,10 +18,13 @@ def execute(filters=None):
 def get_columns(filters):
     columns = """
     Customer,customer,Link/Customer,,140
+    Parent Customer,parent_customer_name_cf,Link/Customer,,140
     Item Code,item_code,Link/Item,,200
     Item Name,item_name,,,200
     Item Group,item_group,,,130
     Brand,brand,,,130
+    Parent Make,custom_parent_make,Data,,120
+    UPG,unified_product_group_cf,,,140
     Batch,batch_id,Link,Batch,110
     Warehouse,batch_warehouse,Link,Warehouse,130
     Supplier,supplier,,,120
@@ -49,7 +52,8 @@ def get_columns(filters):
     )
     columns = csv_to_columns(columns)
     if filters.inventory_type == "Sold":
-        columns = [d for d in columns if not d["fieldname"] == "batch_balance_age"]
+        columns = [d for d in columns if not d["fieldname"]
+                   == "batch_balance_age"]
     return columns
 
 
@@ -108,14 +112,19 @@ select fn.* , fn2.* ,
     tb.reference_doctype , tb.reference_name , tb.batch_qty ,
     tpr.posting_date pr_date , tpri.received_stock_qty , 
     tpri.base_rate , tb.batch_qty * tpri.base_rate batch_amount ,
-    tso.customer
+    tso.customer , 
+    tc.parent_customer_name_cf , 
+    tbrn.custom_parent_make , 
+    tbrn.unified_product_group_cf
     from tabBatch tb 
 inner join tabItem ti on ti.name = tb.item 
+left outer join tabBrand tbrn on tbrn.name = ti.brand
 left outer join `tabPurchase Receipt` tpr on tpr.name = tb.reference_name 
     and tpr.docstatus = 1
 left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
     and tpri.item_code = tb.item and tpri.batch_no = tb.name
 left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf
+left outer join tabCustomer tc on tc.name = tso.customer
 left outer join (
     select parent, sales_person  from `tabSales Team` tst 
     where parenttype = 'Sales Order'
@@ -174,6 +183,5 @@ def get_conditions(filters):
         conditions.append("tpr.posting_date <= %(to_date)s")
     if filters.warehouse:
         conditions.append("tpri.warehouse = %(warehouse)s")
-
 
     return conditions and " where " + " and ".join(conditions) or ""

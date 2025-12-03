@@ -225,7 +225,8 @@ def get_conditions(filters):
         conditions.append("ti.brand = %(brand)s")
 
     if filters.get("mr_date") == "Yesterday":
-        conditions.append("tpri.posting_date = %s" % add_to_date(today(), days=-1))
+        conditions.append("tpri.posting_date = %s" %
+                          add_to_date(today(), days=-1))
 
     if filters.get("mr_date") == "Today":
         conditions.append("tpri.posting_date = %s" % today())
@@ -261,7 +262,6 @@ COLUMNS = [
     "Item Code,item_code,Link,Item,150",
     "Item #,item_number,,,150",
     "Item Group,item_group,Link,Item Group,150",
-    "UPG,unified_product_group_cf,,,150",
     "MFR,mfr,Data,,150",
     "CPO Qty,cpo_qty,Float,,150",
     "On Order (NP)QTY,on_order_np_qty,Float,,150",
@@ -449,7 +449,6 @@ SHOW_SUMMARY_COLUMNS = [
     "Customer Payment Term,payment_terms_template,,,180",
     "Customer Buyer,customer_buyer,,,150",
     "Item Group,item_group,Link,Item Group,150",
-    "UPG,unified_product_group_cf,,,150",
     "Item Code,item_code,Link,Item,150",
     "On Order Qty,on_order_np_qty,Float,,150",
     "Reserved Order Qty,reserved_order_qty,Float,,150",

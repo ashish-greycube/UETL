@@ -1,0 +1,131 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2025-11-30 11:00:43.140075",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "sales_invoice",
+        "invoice_date",
+        "customer",
+        "shipping_bill_no",
+        "shipping_bill_date",
+        "port_of_loading",
+        "bl_no",
+        "column_break_sbri",
+        "dbk_value",
+        "rodtep_value",
+        "freight_cost",
+        "insurance_cost",
+        "other_charges",
+        "fob_value",
+        "exchange_rate"
+    ],
+    "fields": [
+        {
+            "fieldname": "sales_invoice",
+            "fieldtype": "Link",
+            "label": "Sales Invoice",
+            "options": "Sales Invoice"
+        },
+        {
+            "fetch_from": "sales_invoice.customer",
+            "fieldname": "customer",
+            "fieldtype": "Link",
+            "label": "Customer",
+            "options": "Customer"
+        },
+        {
+            "fieldname": "shipping_bill_no",
+            "fieldtype": "Data",
+            "label": "Shipping Bill No"
+        },
+        {
+            "fieldname": "shipping_bill_date",
+            "fieldtype": "Date",
+            "label": "Shipping Bill Date"
+        },
+        {
+            "fieldname": "port_of_loading",
+            "fieldtype": "Data",
+            "label": "Port of Loading"
+        },
+        {
+            "fieldname": "bl_no",
+            "fieldtype": "Data",
+            "label": "BL No"
+        },
+        {
+            "fieldname": "dbk_value",
+            "fieldtype": "Data",
+            "label": "DBK Value"
+        },
+        {
+            "fieldname": "rodtep_value",
+            "fieldtype": "Data",
+            "label": "RODTEP Value"
+        },
+        {
+            "fieldname": "freight_cost",
+            "fieldtype": "Currency",
+            "label": "Freight Cost"
+        },
+        {
+            "fieldname": "insurance_cost",
+            "fieldtype": "Currency",
+            "label": "Insurance Cost"
+        },
+        {
+            "fieldname": "other_charges",
+            "fieldtype": "Currency",
+            "label": "Other Charges"
+        },
+        {
+            "fieldname": "fob_value",
+            "fieldtype": "Currency",
+            "label": "FOB Value"
+        },
+        {
+            "fieldname": "exchange_rate",
+            "fieldtype": "Currency",
+            "label": "Exchange Rate"
+        },
+        {
+            "fieldname": "column_break_sbri",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fetch_from": "sales_invoice.posting_date",
+            "fieldname": "invoice_date",
+            "fieldtype": "Date",
+            "label": "Invoice Date"
+        }
+    ],
+    "grid_page_length": 50,
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-12-01 04:29:24.652832",
+    "modified_by": "Administrator",
+    "module": "UETL",
+    "name": "Shipment UE",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "row_format": "Dynamic",
+    "rows_threshold_for_grid_search": 20,
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

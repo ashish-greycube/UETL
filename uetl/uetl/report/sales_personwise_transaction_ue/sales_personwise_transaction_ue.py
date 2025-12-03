@@ -7,6 +7,7 @@ from erpnext.selling.report.sales_person_wise_transaction_summary.sales_person_w
     get_conditions,
 )
 from erpnext import get_company_currency
+from uetl.uetl.report import csv_to_columns
 import json
 
 
@@ -17,8 +18,6 @@ def execute(filters=None):
     columns = get_columns(filters)
     entries = get_entries(filters)
     data = entries
-
-    company_currency = get_company_currency(filters.get("company"))
 
     if data:
         total_row = [""] * len(data[0])
@@ -70,7 +69,14 @@ def get_entries(filters):
                 -- tsi.name sales_invoice , tsi.posting_date sales_invoice_date ,
                 rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
                 dt_item.business_type_cf , dt_item.cost_center , tcc.parent_cost_center , tcc_gp.parent_cost_center g_parent_cost_center ,
-                dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf
+                dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf ,
+            -- custom columns from Customer
+            tc.custom_line_of_business , 
+            tc.custom_potential , 
+            tc.parent_customer_name_cf ,
+            tc.customer_id_cf ,
+            tc.custom_tier ,
+            tb.custom_parent_make
             FROM                                                                                                                  
                 `tabSales Order` dt
                 inner join `tabSales Order Item` dt_item on dt_item.parent = dt.name
@@ -119,7 +125,13 @@ def get_entries(filters):
             DATE(tsoi.creation) so_date , tsoi.delivery_date tsoi_delivery_date ,
             dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf ,
             dt_item.batch_no , dt_item.batch_no , dt.payment_terms_template , dt_item.uom ,tsoi.purchaser_cf , 
-            tso.delivery_date , ta.country , tc.parent_customer_name_cf , tc.customer_id_cf
+            tso.delivery_date , ta.country ,
+            -- custom columns from Customer
+            tc.custom_line_of_business , 
+            tc.custom_potential , 
+            tc.parent_customer_name_cf ,
+            tc.customer_id_cf ,
+            tc.custom_tier 
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 
@@ -163,74 +175,85 @@ def get_entries(filters):
 
 def get_columns(filters):
     if filters["doc_type"] == "Sales Order":
-        columns = """[
-                {'label':'Sales Order No','fieldname':'name','fieldtype':'Link','options':'Sales Order','width':'140'},
-                {'label':'Posting Date','fieldname':'posting_date','fieldtype':'Date','options':'','width':'140'},
-                {'label':'Customer','fieldname':'customer','fieldtype':'Link','options':'Customer','width':'140'},
-                {'label':'Customer Buyer','fieldname':'contact_display','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Customer Reference (CPO #)','fieldname':'po_no','fieldtype':'Link','options':'Purchase Order','width':'140'},
-                {'label':'Customers Purchase Order Date','fieldname':'po_date','fieldtype':'Date','options':'','width':'140'},
-                {'label':'External Part #','fieldname':'external_part_no_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Item Code','fieldname':'item_code','fieldtype':'Link','options':'Item','width':'140'},
-                {'label':'Item Name','fieldname':'item_name','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Item Group','fieldname':'item_group','fieldtype':'Link','options':'Item Group','width':'140'},
-                {'label':'UPG','fieldname':'unified_product_group_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Brand','fieldname':'brand','fieldtype':'Link','options':'Brand','width':'140'},
-                {'label':'Qty','fieldname':'stock_qty','fieldtype':'Float','options':'','width':'140'},
-                {'label':'Unit Price','fieldname':'base_net_rate','fieldtype':'Currency','options':'','width':'140'},
-                {'label':'Amount','fieldname':'base_net_amount','fieldtype':'Currency','options':'','width':'140'},
-                {'label':'Status','fieldname':'so_status','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Delivery Status','fieldname':'delivery_status','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Billing Status','fieldname':'billing_status','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Sales Person','fieldname':'sales_person','fieldtype':'Link','options':'Sales Person','width':'140'},
-                {'label':'RSM Person','fieldname':'rsm_sales_person','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Unit (Sales)','fieldname':'bu_sales_person','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Territory','fieldname':'territory','fieldtype':'Link','options':'Territory','width':'140'},
-                {'label':'Customer Group','fieldname':'customer_group','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Industry','fieldname':'industry','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Type','fieldname':'business_type_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
-                {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
-                {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
-                {'label':'Account Manager','fieldname':'account_manager_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Reporting Manager','fieldname':'reporting_manager_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Customer Support','fieldname':'customer_support_cf','fieldtype':'Data','options':'','width':'140'}
-                ]"""
+        return csv_to_columns(
+            """
+Sales Order No,name,Link,Sales Order,140
+Posting Date,posting_date,Date,,140
+Customer,customer,Link,Customer,140
+Customer Buyer,contact_display,Data,,140
+Customer Reference (CPO #),po_no,Link,Purchase Order,140
+Customers Purchase Order Date,po_date,Date,,140
+External Part #,external_part_no_cf,Data,,140
+Item Code,item_code,Link,Item,140
+Item Name,item_name,Data,,140
+Item Group,item_group,Link,Item Group,140
+UPG,unified_product_group_cf,Data,,140
+Brand,brand,Link,Brand,140
+Parent Brand,custom_parent_make,Link,Brand,140
+Qty,stock_qty,Float,,140
+Unit Price,base_net_rate,Currency,,140
+Amount,base_net_amount,Currency,,140
+Status,so_status,Data,,140
+Delivery Status,delivery_status,Data,,140
+Billing Status,billing_status,Data,,140
+Sales Person,sales_person,Link,Sales Person,140
+RSM Person,rsm_sales_person,Data,,140
+Business Unit (Sales),bu_sales_person,Data,,140
+Territory,territory,Link,Territory,140
+Customer Group,customer_group,Data,,140
+Industry,industry,Data,,140
+Business Type,business_type_cf,Data,,140
+Business Unit(Sourcing),cost_center,Link,Cost Center,140
+Business Unit(TL/Product Group),parent_cost_center,Data,Cost Center,140
+Business Unit(Product),g_parent_cost_center,Data,Cost Center,140
+Account Manager,account_manager_cf,Data,,140
+Reporting Manager,reporting_manager_cf,Data,,140
+Customer Support,customer_support_cf,Data,,140
+Line Of Business,custom_line_of_business,Data,,140
+Potential,custom_potential,Data,,140
+Parent Customer,parent_customer_name_cf,Data,,140
+Customer ID,customer_id_cf,Data,,140
+Tier,custom_tier,Data,,140
+""")
     else:
-        columns = """[
-                {'label':'Sales Invoice','fieldname':'name','fieldtype':'Link','options':'Sales Invoice','width':'140'},
-                {'label':'Posting Date','fieldname':'posting_date','fieldtype':'Date','options':'','width':'140'},
-                {'label':'IRN No','fieldname':'irn','fieldtype':'Data','options':'','width':'140'},
-                {'label':'E-Way Bill No','fieldname':'ewaybill','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Sales Order No','fieldname':'sales_order','fieldtype':'Link','options':'Sales Order','width':'140'},
-                {'label':'Sales Order Date','fieldname':'so_date','fieldtype':'Date','width':'140'},
-                {'label':'Customer','fieldname':'customer','fieldtype':'Link','options':'Customer','width':'140'},
-                {'label':'Customer Buyer','fieldname':'contact_display','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Customer Reference (CPO #)','fieldname':'po_no','fieldtype':'Link','options':'Purchase Order','width':'140'},
-                {'label':'Customers Purchase Order Date','fieldname':'po_date','fieldtype':'Date','options':'','width':'140'},
-                {'label':'External Part #','fieldname':'external_part_no_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Item Code','fieldname':'item_code','fieldtype':'Link','options':'Item','width':'140'},
-                {'label':'Item Name','fieldname':'item_name','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Item Group','fieldname':'item_group','fieldtype':'Link','options':'Item Group','width':'140'},
-                {'label':'UPG','fieldname':'unified_product_group_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Brand','fieldname':'brand','fieldtype':'Link','options':'Brand','width':'140'},
-                {'label':'Qty','fieldname':'stock_qty','fieldtype':'Float','options':'','width':'140'},
-                {'label':'Unit Price','fieldname':'base_net_rate','fieldtype':'Currency','options':'','width':'140'},
-                {'label':'Amount','fieldname':'base_net_amount','fieldtype':'Currency','options':'','width':'140'},
-                {'label':'Status','fieldname':'status','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Sales Person','fieldname':'sales_person','fieldtype':'Link','options':'Sales Person','width':'140'},
-                {'label':'RSM Person','fieldname':'rsm_sales_person','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Unit (Sales)','fieldname':'bu_sales_person','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Territory','fieldname':'territory','fieldtype':'Link','options':'Territory','width':'140'},
-                {'label':'Customer Group','fieldname':'customer_group','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Industry','fieldname':'industry','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Type','fieldname':'business_type_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Business Unit(Sourcing)','fieldname':'cost_center','fieldtype':'Link','options':'Cost Center','width':'140'},
-                {'label':'Business Unit(TL/Product Group)','fieldname':'parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
-                {'label':'Business Unit(Product)','fieldname':'g_parent_cost_center','fieldtype':'Data','options':'Cost Center','width':'140'},
-                {'label':'Account Manager','fieldname':'account_manager_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Reporting Manager','fieldname':'reporting_manager_cf','fieldtype':'Data','options':'','width':'140'},
-                {'label':'Customer Support','fieldname':'customer_support_cf','fieldtype':'Data','options':'','width':'140'}
-                ]"""
-
-    return json.loads(columns.replace("'", '"'))
+        return csv_to_columns("""
+Sales Invoice,name,Link,Sales Invoice,140
+Posting Date,posting_date,Date,,140
+IRN No,irn,Data,,140
+E-Way Bill No,ewaybill,Data,,140
+Sales Order No,sales_order,Link,Sales Order,140
+Sales Order Date,so_date,Date,,140
+Customer,customer,Link,Customer,140
+Customer Buyer,contact_display,Data,,140
+Customer Reference (CPO #),po_no,Link,Purchase Order,140
+Customers Purchase Order Date,po_date,Date,,140
+External Part #,external_part_no_cf,Data,,140
+Item Code,item_code,Link,Item,140
+Item Name,item_name,Data,,140
+Item Group,item_group,Link,Item Group,140
+UPG,unified_product_group_cf,Data,,140
+Brand,brand,Link,Brand,140
+Parent Brand,custom_parent_make,Link,Brand,140
+Qty,stock_qty,Float,,140
+Unit Price,base_net_rate,Currency,,140
+Amount,base_net_amount,Currency,,140
+Status,status,Data,,140
+Sales Person,sales_person,Link,Sales Person,140
+RSM Person,rsm_sales_person,Data,,140
+Business Unit (Sales),bu_sales_person,Data,,140
+Territory,territory,Link,Territory,140
+Customer Group,customer_group,Data,,140
+Industry,industry,Data,,140
+Business Type,business_type_cf,Data,,140
+Business Unit(Sourcing),cost_center,Link,Cost Center,140
+Business Unit(TL/Product Group),parent_cost_center,Data,Cost Center,140
+Business Unit(Product),g_parent_cost_center,Data,Cost Center,140
+Account Manager,account_manager_cf,Data,,140
+Reporting Manager,reporting_manager_cf,Data,,140
+Customer Support,customer_support_cf,Data,,140   
+Line Of Business,custom_line_of_business,Data,,140
+Potential,custom_potential,Data,,140
+Parent Customer,parent_customer_name_cf,Data,,140
+Customer ID,customer_id_cf,Data,,140
+Tier,custom_tier,Data,,140                           
+""")

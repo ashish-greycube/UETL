@@ -96,6 +96,17 @@ COLUMNS = (
     "pri_grand_parent_cost_center",
     "pr_currency",
     "conversion_rate",
+    "custom_parent_supplier",
+    "custom_potential",
+    "custom_line_of_business",
+    "custom_supplier_id",
+    "custom_inco_terms",
+    "custom_igst",
+    "custom_customs_duty",
+    "custom_assessable_value",
+    "custom_boe_date",
+    "custom_boe_no",
+
 )
 
 
@@ -124,7 +135,17 @@ Item Brand,brand,,,130
 BU Product,pri_parent_cost_center,,130
 BU Product Team,pri_grand_parent_cost_center,,,130
 Sales Order,sales_order_cf,Link,Sales Order,130
-HSN Code,gst_hsn_code,,,120
+HSN Code,gst_hsn_code,,,120,
+Line Of Business,custom_line_of_business,Data,,140
+Potential,custom_potential,Data,,140
+Parent Supplier,custom_parent_supplier,Link/Supplier,,140
+Supplier ID,custom_supplier_id,Data,,140
+Inco Terms,custom_inco_terms,,,200
+IGST,custom_igst,Currency,,130
+Customs Duty,custom_customs_duty,Currency,,130
+Assesable Value,custom_assessable_value,,,130
+BOE Date,custom_boe_date,Date,,130
+BOE No,custom_boe_no,Data,,130
     """
     col_dict = {
         d["fieldname"]: d
@@ -155,7 +176,18 @@ select
     tpo.transaction_date po_posting_date , ti.brand ,
     tccp.parent_cost_center pri_parent_cost_center, 
     tccgp.parent_cost_center pri_grand_parent_cost_center ,
-    tpri.sales_order_cf , tpri.gst_hsn_code
+    tpri.sales_order_cf , tpri.gst_hsn_code ,
+    -- custom columns
+    ts.custom_parent_supplier ,
+    ts.custom_potential , 
+    ts.custom_line_of_business , 
+    ts.custom_supplier_id ,
+    custom_inco_terms ,
+    tpr.custom_igst ,
+    tpr.custom_customs_duty ,
+    tpr.custom_assessable_value ,
+    tpr.custom_boe_date ,
+    tpr.custom_boe_no 
 from `tabPurchase Receipt` tpr 
 inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name 
 inner join `tabItem` ti on ti.name = tpri.item_code
@@ -177,7 +209,8 @@ where tpri.name in ({})
         d.update(
             {
                 "total_cost": round(
-                    d.get("amount", 0) + d.get("landed_cost_voucher_amount", 0), 2
+                    d.get("amount", 0) +
+                    d.get("landed_cost_voucher_amount", 0), 2
                 )
             }
         )
