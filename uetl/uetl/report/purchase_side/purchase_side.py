@@ -143,7 +143,7 @@ Supplier ID,custom_supplier_id,Data,,140
 Inco Terms,custom_inco_terms,,,200
 IGST,custom_igst,Currency,,130
 Customs Duty,custom_customs_duty,Currency,,130
-Assesable Value,custom_assessable_value,,,130
+Assesable Value,custom_assessable_value,Data,,130
 BOE Date,custom_boe_date,Date,,130
 BOE No,custom_boe_no,Data,,130
     """
