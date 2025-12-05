@@ -182,7 +182,7 @@ select
     ts.custom_potential , 
     ts.custom_line_of_business , 
     ts.custom_supplier_id ,
-    custom_inco_terms ,
+    tpr.custom_inco_terms ,
     tpr.custom_igst ,
     tpr.custom_customs_duty ,
     tpr.custom_assessable_value ,
