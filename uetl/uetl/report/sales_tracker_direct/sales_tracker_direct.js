@@ -46,6 +46,7 @@ frappe.query_reports["Sales Tracker Direct"] = {
       fieldname: "upg",
       fieldtype: "Link",
       options: "Unified Product Group",
+      hidden: 1,
       get_query: function () {
         return {
           query:
