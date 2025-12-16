@@ -47,6 +47,12 @@ def get_columns(filters):
     BU Product,parent_cost_center,,,150
     RSM Team,parent_sales_person,,,150
     BU Sales,grand_parent_sales_person,,,150
+    Line Of Business,custom_line_of_business,Data,,140
+    Potential,custom_potential,Data,,140
+    Parent Customer,parent_customer_name_cf,Data,,140
+    Customer ID,customer_id_cf,Data,,140
+    Customer Group Company,custom_customer_group_company,Data,,140
+    Tier,custom_tier,Data,,140                           
     """.format(
         get_default_currency()
     )
@@ -115,7 +121,14 @@ select fn.* , fn2.* ,
     tso.customer , 
     tc.parent_customer_name_cf , 
     tbrn.custom_parent_make , 
-    tbrn.unified_product_group_cf
+    tbrn.unified_product_group_cf ,
+    -- custom columns from Customer
+    tc.custom_line_of_business , 
+    tc.custom_potential , 
+    tc.parent_customer_name_cf ,
+    tc.customer_id_cf ,
+    tc.custom_customer_group_company ,
+    tc.custom_tier     
     from tabBatch tb 
 inner join tabItem ti on ti.name = tb.item 
 left outer join tabBrand tbrn on tbrn.name = ti.brand

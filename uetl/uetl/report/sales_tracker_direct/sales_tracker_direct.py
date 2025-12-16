@@ -81,7 +81,14 @@ def get_data(filters=None):
                 when billed_amt = base_net_amount then 'Fully Billed'
                 else '' end billed_status ,
             tpoi.parent purchase_order, tpri.parent purchase_receipt ,
-            tsii.irn , tsii.ewaybill , tsoi.delivery_date soi_delivery_date
+            tsii.irn , tsii.ewaybill , tsoi.delivery_date soi_delivery_date ,
+                        -- custom columns from Customer
+    tc.custom_line_of_business , 
+    tc.custom_potential , 
+    tc.parent_customer_name_cf ,
+    tc.customer_id_cf ,
+    tc.custom_customer_group_company ,
+    tc.custom_tier
             -- '~',
             -- tsoi.parent 'so', tsoi.name 'soi name', 
             -- tpoi.name 'tpoi name', tpri.name 'tpri name', tsii.name 'tsii name',
@@ -153,6 +160,7 @@ def get_data(filters=None):
         ),
         filters,
         as_dict=True,
+        debug=True
     )
 
     if filters.get("sales_person"):
@@ -311,6 +319,12 @@ COLUMNS = [
     "Territory,territory,Link,Territory,150",
     "Industry,industry,Data,,150",
     "Customer Payment Term,payment_terms_template,,,180",
+    "Line Of Business,custom_line_of_business,Data,,140",
+    "Potential,custom_potential,Data,,140",
+    "Parent Customer,parent_customer_name_cf,Data,,140",
+    "Customer ID,customer_id_cf,Data,,140",
+    "Customer Group Company,custom_customer_group_company,Data,,140",
+    "Tier,custom_tier,Data,,140 ",
 ]
 
 
@@ -375,7 +389,14 @@ from
     tc.customer_group ,
     tso.territory ,
     tc.industry ,
-    tso.payment_terms_template 
+    tso.payment_terms_template ,
+            -- custom columns from Customer
+    tc.custom_line_of_business , 
+    tc.custom_potential , 
+    tc.parent_customer_name_cf ,
+    tc.customer_id_cf ,
+    tc.custom_customer_group_company ,
+    tc.custom_tier
     from 
         `tabSales Order` tso
     inner join `tabSales Order Item` tsoi on tsoi.parent = tso.name 
@@ -456,4 +477,10 @@ SHOW_SUMMARY_COLUMNS = [
     "On Order Amt,on_order_np_amount,Currency,,150",
     "Reserved Order Amt,reserved_order_amount,Currency,,150",
     "Reserved Physical Amt,reserved_physical_amount,Currency,,150",
+    "Line Of Business,custom_line_of_business,Data,,140",
+    "Potential,custom_potential,Data,,140",
+    "Parent Customer,parent_customer_name_cf,Data,,140",
+    "Customer ID,customer_id_cf,Data,,140",
+    "Customer Group Company,custom_customer_group_company,Data,,140",
+    "Tier,custom_tier,Data,,140 ",
 ]

@@ -68,9 +68,17 @@ def get_invoice_data(data):
         """
 select
     tsii.parent sales_invoice, tsi.payment_terms_template , 
-    tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person 
+    tst.sales_person , tsp.parent_sales_person , tsgp.parent_sales_person grand_parent_sales_person ,
+                -- custom columns from Customer
+    tc.custom_line_of_business , 
+    tc.custom_potential , 
+    tc.parent_customer_name_cf ,
+    tc.customer_id_cf ,
+    tc.custom_customer_group_company ,
+    tc.custom_tier
 from `tabSales Invoice Item` tsii 
     inner join `tabSales Invoice` tsi on tsi.name = tsii.parent
+    inner join `tabCustomer` tc on tc.name = tsi.customer
     left outer join (
         select parent, sales_person  from `tabSales Team` tst 
         group by parent
@@ -112,6 +120,12 @@ def get_columns(columns):
         "RSM Team,parent_sales_person,,,150",
         "BU Sales,grand_parent_sales_person,,,150",
         "Payment Terms,payment_terms_template,,,180",
+        "Line Of Business,custom_line_of_business,Data,,140",
+        "Potential,custom_potential,Data,,140",
+        "Parent Customer,parent_customer_name_cf,Data,,140",
+        "Customer ID,customer_id_cf,Data,,140",
+        "Customer Group Company,custom_customer_group_company,Data,,140",
+        "Tier,custom_tier,Data,,140 ",
     ]
 
     out = []

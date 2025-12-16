@@ -75,6 +75,7 @@ def get_entries(filters):
             tc.custom_potential , 
             tc.parent_customer_name_cf ,
             tc.customer_id_cf ,
+            tc.custom_customer_group_company ,
             tc.custom_tier ,
             tb.custom_parent_make
             FROM                                                                                                                  
@@ -131,6 +132,7 @@ def get_entries(filters):
             tc.custom_potential , 
             tc.parent_customer_name_cf ,
             tc.customer_id_cf ,
+            tc.custom_customer_group_company ,
             tc.custom_tier 
             FROM
                 `tabSales Invoice` dt 
@@ -213,6 +215,7 @@ Line Of Business,custom_line_of_business,Data,,140
 Potential,custom_potential,Data,,140
 Parent Customer,parent_customer_name_cf,Data,,140
 Customer ID,customer_id_cf,Data,,140
+Customer Group Company,custom_customer_group_company,Data,,140
 Tier,custom_tier,Data,,140
 """)
     else:
@@ -255,5 +258,6 @@ Line Of Business,custom_line_of_business,Data,,140
 Potential,custom_potential,Data,,140
 Parent Customer,parent_customer_name_cf,Data,,140
 Customer ID,customer_id_cf,Data,,140
+Customer Group Company,custom_customer_group_company,Data,,140
 Tier,custom_tier,Data,,140                           
 """)
