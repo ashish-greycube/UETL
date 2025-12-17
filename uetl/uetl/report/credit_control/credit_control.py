@@ -38,6 +38,8 @@ def get_data(filters):
 		inner join `tabSales Order` tso on tso.name = tsoi.parent and tsoi.parenttype = 'Sales Order'
 		inner join `tabPurchase Order Item` tpoi on tpoi.sales_order = tso.name
 			and tpoi.item_code = tsoi.item_code
+   		inner join `tabPurchase Order` tpo on tpo.name = tpoi.parent 	
+			and tpo.docstatus = 1
 		group by tso.customer
 	) t1 on t1.customer = tc.name
 	left outer join (
