@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from itertools import groupby
 from frappe.utils import cstr, cint, add_to_date, today
+from erpnext.accounts.utils import get_fiscal_year
 
 from uetl.uetl.report import csv_to_columns
 
@@ -29,6 +30,7 @@ def get_data(filters=None):
             tsoi.external_part_no_cf as external_part_no_cf,
             tsoi.item_name item_number, tsoi.item_code , tsoi.item_group ,
             ti.brand mfr, 
+            tbr.custom_parent_make,
             tsoi.stock_qty cpo_qty,
             tsoi.stock_qty - tsoi.ordered_qty on_order_np_qty ,
             tsoi.ordered_qty - coalesce(tpoi.received_qty,0) reserved_order_qty ,
@@ -160,7 +162,7 @@ def get_data(filters=None):
         ),
         filters,
         as_dict=True,
-        debug=True
+        # debug=True
     )
 
     if filters.get("sales_person"):
@@ -213,7 +215,7 @@ def get_columns(filters, item):
 
 def get_conditions(filters):
     conditions = []
-    # conditions.append(" tso.name = 'ESO2201186' ")
+    # conditions.append(" tso.name = 'ESO2501764' ")
 
     if filters.so_status:
         if filters.so_status == "Open":
@@ -238,6 +240,11 @@ def get_conditions(filters):
 
     if filters.get("mr_date") == "Today":
         conditions.append("tpri.posting_date = %s" % today())
+
+    filters["from_date"] = get_fiscal_year()["year_start_date"]
+    filters["to_date"] = today()
+    conditions.append(
+        "tso.transaction_date between %(from_date)s and %(to_date)s ")
 
     return conditions and " and " + " and ".join(conditions) or ""
 
@@ -271,6 +278,8 @@ COLUMNS = [
     "Item #,item_number,,,150",
     "Item Group,item_group,Link,Item Group,150",
     "MFR,mfr,Data,,150",
+    "Parent Make,custom_parent_make,Link,Brand,150",
+    "UPG,unified_product_group_cf,,,140"
     "CPO Qty,cpo_qty,Float,,150",
     "On Order (NP)QTY,on_order_np_qty,Float,,150",
     "Reserved Order Qty,reserved_order_qty,Float,,150",
@@ -373,8 +382,9 @@ from
     tsoi.item_code,
     tsoi.item_group,
     tsoi.item_name item_number,
-    unified_product_group_cf,
+    tbr.unified_product_group_cf,
     ti.brand mfr,
+    tbr.custom_parent_make,
 	tso.currency,
     tsoi.purchaser_cf purchaser,
     group_concat(distinct tsoi.cost_center) tsoi_cost_center ,
@@ -412,7 +422,7 @@ from
     left outer join `tabSales Person` tsp on tsp.name = tst.sales_person
     left outer join `tabSales Person` tspp on tspp.name = tsp.parent_sales_person
     WHERE 
-        tso.docstatus = 1 {conditions}
+        tso.docstatus = 1 {conditions} 
     group by tso.name , tsoi.item_code
 ) so 
 left outer join (
@@ -441,7 +451,9 @@ SHOW_SUMMARY_COLUMNS = [
     "CPO Line #,cpo_line_no_cf,,,150",
     "External Part #,external_part_no_cf,,,150",
     "Part No,item_number,,,150",
-    "Make,mfr,Data,,150",
+    "Make,mfr,Link,Brand,150",
+    "Parent Make,custom_parent_make,Link,Brand,150",
+    "UPG,unified_product_group_cf,,,140"
     "Currency,currency,,,90",
     "Unit Price,base_net_rate,Currency,,120",
     "CPO Qty,cpo_qty,Float,,150",

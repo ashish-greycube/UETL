@@ -1,16 +1,16 @@
 {
  "add_total_row": 0,
+ "add_translate_data": 0,
  "columns": [],
  "creation": "2022-05-01 18:13:30.012186",
- "disable_prepared_report": 1,
  "disabled": 0,
  "docstatus": 0,
  "doctype": "Report",
  "filters": [],
- "idx": 0,
+ "idx": 37,
  "is_standard": "Yes",
- "letter_head": "Standard",
- "modified": "2022-05-01 18:13:30.012186",
+ "letter_head": null,
+ "modified": "2025-12-17 23:53:36.684938",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "Sales Tracker Direct",
@@ -41,5 +41,6 @@
   {
    "role": "UET Shipment Manager"
   }
- ]
+ ],
+ "timeout": 0
 }

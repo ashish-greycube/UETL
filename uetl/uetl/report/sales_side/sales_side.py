@@ -12,6 +12,11 @@ def execute(filters=None):
     columns, data = _execute(filters)
     data = data[:-1]
 
+    if filters.get("sez_status") == "Pending":
+        data = [d for d in data if not d.custom_sez_file_attachment]
+    elif filters.get("sez_status") == "Completed":
+        data = [d for d in data if d.custom_sez_file_attachment]
+
     for d in data:
         d.billing_month = d.posting_date.strftime("%b")
 
@@ -26,18 +31,18 @@ def get_columns(columns):
             "fieldtype": "Data",
             "width": "140",
         },
-        {
-            "label": "Parent customer name",
-            "fieldname": "parent_customer_cf",
-            "fieldtype": "Data",
-            "width": "140",
-        },
-        {
-            "label": "Customer ID",
-            "fieldname": "customer_id_cf",
-            "fieldtype": "Data",
-            "width": "140",
-        },
+        # {
+        #     "label": "Parent customer name",
+        #     "fieldname": "parent_customer_cf",
+        #     "fieldtype": "Data",
+        #     "width": "140",
+        # },
+        # {
+        #     "label": "Customer ID",
+        #     "fieldname": "customer_id_cf",
+        #     "fieldtype": "Data",
+        #     "width": "140",
+        # },
         {
             "label": "Customer Country",
             "fieldname": "country",
@@ -76,4 +81,10 @@ def get_columns(columns):
             "fieldtype": "Data",
             "width": "140",
         },
+        {
+            "label": "Is SEZ Pending",
+            "fieldname": "custom_sez_file_attachment",
+            "fieldtype": "Check",
+            "width": "90",
+        }
     ]

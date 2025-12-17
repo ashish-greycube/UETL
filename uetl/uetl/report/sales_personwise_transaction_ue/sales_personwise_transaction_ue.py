@@ -133,7 +133,9 @@ def get_entries(filters):
             tc.parent_customer_name_cf ,
             tc.customer_id_cf ,
             tc.custom_customer_group_company ,
-            tc.custom_tier 
+            tc.custom_tier ,
+            tb.custom_parent_make ,
+            dt.custom_sez_file_attachment
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 
@@ -259,5 +261,5 @@ Potential,custom_potential,Data,,140
 Parent Customer,parent_customer_name_cf,Data,,140
 Customer ID,customer_id_cf,Data,,140
 Customer Group Company,custom_customer_group_company,Data,,140
-Tier,custom_tier,Data,,140                           
+Tier,custom_tier,Data,,140        
 """)

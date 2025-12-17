@@ -64,6 +64,8 @@ COLUMNS = (
     "item_name",
     "item_group",
     "brand",
+    "custom_parent_make",
+    "unified_product_group_cf",
     "description",
     "sales_order_cf",
     "invoice",
@@ -131,7 +133,9 @@ Purchase Order Date,po_posting_date,Date,,130
 Batch ID,batch_no,Link,Batch,130
 Supplier Group,supplier_group,,,130
 Supplier Payment Terms,supplier_payment_terms,,,180
-Item Brand,brand,,,130
+Item Brand,brand,Link,Brand,130
+Parent Make,custom_parent_make,Link,Brand,150
+UPG,unified_product_group_cf,,,140
 BU Product,pri_parent_cost_center,,130
 BU Product Team,pri_grand_parent_cost_center,,,130
 Sales Order,sales_order_cf,Link,Sales Order,130
@@ -173,7 +177,7 @@ select
 	tpri.name pr_detail, tpri.rate rate_usd , tpri.amount amount_usd , tpri.date_code_cf , tpri.batch_no ,
 	tpri.country_of_origin_cf , tpri.cost_center pri_cost_center, tpri.landed_cost_voucher_amount ,
 	ts.payment_terms supplier_payment_terms , ts.supplier_group , ts.country supplier_country ,
-    tpo.transaction_date po_posting_date , ti.brand ,
+    tpo.transaction_date po_posting_date , ti.brand , tbr.custom_parent_make , tbr.unified_product_group_cf ,
     tccp.parent_cost_center pri_parent_cost_center, 
     tccgp.parent_cost_center pri_grand_parent_cost_center ,
     tpri.sales_order_cf , tpri.gst_hsn_code ,
@@ -191,6 +195,7 @@ select
 from `tabPurchase Receipt` tpr 
 inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name 
 inner join `tabItem` ti on ti.name = tpri.item_code
+left outer join `tabBrand` tbr on tbr.name = ti.brand
 inner join tabSupplier ts on ts.name = tpr.supplier 
 inner join `tabPurchase Order` tpo on tpo.name = tpri.purchase_order
 left outer JOIN `tabCost Center` tccp on tccp.name = tpri.cost_center 

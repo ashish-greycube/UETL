@@ -35,7 +35,7 @@ def get_data(filters):
 				tsu.other_charges , 
 				tsu.fob_value , 
 				tsu.exchange_rate ,
-				case when tsi.custom_sez_file_attachment is null then 1 else 0 end is_pending_sez
+				case when nullif(tsi.custom_sez_file_attachment,'') is null then 1 else 0 end is_pending_sez
 			from `tabSales Invoice` tsi
 			left outer join `tabShipment UE` tsu on tsu.sales_invoice =  tsi.name
 			where tsi.posting_date between %(from_date)s and %(to_date)s {0}
@@ -56,8 +56,8 @@ def get_columns(filters):
  	DBK Value,dbk_value,Currency,,130 
 	RODTEP Value,rodtep_value,Currency,,130 
 	Freight Cost,freight_cost,Currency,,130 
-	Insuranec COst,insurance_cost,Date,Currency,,130 
-	Other Charges,other_chargesCurrency,,130 
+	Insurancs Cost,insurance_cost,Currency,,130 
+	Other Charges,other_charges,Currency,,130 
 	FOB Value,fob_value,Currency,,130 
 	Exchange Rate,exchange_rate,Currency,,130
 	SEZ Pending,is_pending_sez,Check,,130

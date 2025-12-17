@@ -73,5 +73,13 @@ frappe.query_reports["Sales Side"] = {
       fieldtype: "Link",
       options: "Cost Center",
     },
+    {
+      fieldname: "sez_status",
+      label: __("SEZ Status"),
+      fieldtype: "Select",
+      default: 'All',
+      width: "120px",
+      options: "All\nPending\nCompleted"
+    },
   ],
 };
