@@ -25,7 +25,7 @@ def get_data(filters):
 			0 total_amount_due ,
 			t2.batch_amount total_inventory ,
 			t1.open_orders ,
-			t1.open_orders_booked
+			t1.open_orders_booked 
   		from `tabCustomer` tc
     left outer join `tabCustomer Credit Limit` tccl on tccl.parent = tc.name
 		and tccl.parenttype = 'Customer' and tccl.company = %s
@@ -60,8 +60,11 @@ def get_data(filters):
 
     for d in data:
         summary = ar_summary.get(d.customer)
-        d["total_outstanding"] = summary and summary.outstanding or 0
-        d["total_amount_due"] = summary and summary.total_due or 0
+        if summary:
+            d["total_outstanding"] = summary.outstanding or 0
+            d["total_amount_due"] = summary.total_due or 0
+            d["available_limit"] = (
+                (d.credit_limit or 0) - (d.total_outstanding or 0) - (d.open_orders or 0))
 
     return data
 
@@ -76,6 +79,7 @@ def get_columns(filters):
     Total Inventory,total_inventory,Currency,,150
     Open Orders,open_orders,Currency,,150
     Booked Orders,open_orders_booked,Currency,,150
+    Available Limit,available_limit,Currency,,150
     """
     columns = csv_to_columns(columns)
 
