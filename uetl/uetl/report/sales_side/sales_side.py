@@ -83,7 +83,7 @@ def get_columns(columns):
         },
         {
             "label": "Is SEZ Pending",
-            "fieldname": "custom_sez_file_attachment",
+            "fieldname": "is_pending_sez",
             "fieldtype": "Check",
             "width": "90",
         }
