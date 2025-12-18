@@ -77,7 +77,8 @@ def get_entries(filters):
             tc.customer_id_cf ,
             tc.custom_customer_group_company ,
             tc.custom_tier ,
-            tb.custom_parent_make
+            tb.custom_parent_make ,
+            tc.gst_category
             FROM                                                                                                                  
                 `tabSales Order` dt
                 inner join `tabSales Order Item` dt_item on dt_item.parent = dt.name
@@ -135,7 +136,8 @@ def get_entries(filters):
             tc.custom_customer_group_company ,
             tc.custom_tier ,
             tb.custom_parent_make ,
-            case when nullif(dt.custom_sez_file_attachment,'') is null then 1 else 0 end is_pending_sez
+            case when nullif(dt.custom_sez_file_attachment,'') is null then 1 else 0 end is_pending_sez ,
+            tc.gst_category
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 

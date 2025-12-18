@@ -31,18 +31,6 @@ def get_columns(columns):
             "fieldtype": "Data",
             "width": "140",
         },
-        # {
-        #     "label": "Parent customer name",
-        #     "fieldname": "parent_customer_cf",
-        #     "fieldtype": "Data",
-        #     "width": "140",
-        # },
-        # {
-        #     "label": "Customer ID",
-        #     "fieldname": "customer_id_cf",
-        #     "fieldtype": "Data",
-        #     "width": "140",
-        # },
         {
             "label": "Customer Country",
             "fieldname": "country",
@@ -86,5 +74,11 @@ def get_columns(columns):
             "fieldname": "is_pending_sez",
             "fieldtype": "Check",
             "width": "90",
+        },
+        {
+            "label": "GST Category",
+            "fieldname": "gst_category",
+            "fieldtype": "Data",
+            "width": "120",
         }
     ]

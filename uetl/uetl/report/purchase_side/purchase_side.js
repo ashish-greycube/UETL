@@ -7,7 +7,7 @@ frappe.query_reports["Purchase Side"] = {
       fieldname: "from_date",
       label: __("From Date"),
       fieldtype: "Date",
-      default: frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+      default: erpnext.utils.get_fiscal_year(frappe.datetime.get_today(), true)[1],
       reqd: 1,
     },
     {

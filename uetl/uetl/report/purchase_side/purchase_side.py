@@ -108,7 +108,7 @@ COLUMNS = (
     "custom_assessable_value",
     "custom_boe_date",
     "custom_boe_no",
-
+    "custom_tier",
 )
 
 
@@ -144,6 +144,7 @@ Line Of Business,custom_line_of_business,Data,,140
 Potential,custom_potential,Data,,140
 Parent Supplier,custom_parent_supplier,Link/Supplier,,140
 Supplier ID,custom_supplier_id,Data,,140
+Supplier Tier,custom_tier,Data,,140
 Inco Terms,custom_inco_terms,,,200
 IGST,custom_igst,Currency,,130
 Customs Duty,custom_customs_duty,Currency,,130
@@ -191,7 +192,8 @@ select
     tpr.custom_customs_duty ,
     tpr.custom_assessable_value ,
     tpr.custom_boe_date ,
-    tpr.custom_boe_no 
+    tpr.custom_boe_no ,
+    ts.custom_tier
 from `tabPurchase Receipt` tpr 
 inner join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name 
 inner join `tabItem` ti on ti.name = tpri.item_code

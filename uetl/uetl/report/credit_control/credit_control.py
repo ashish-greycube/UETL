@@ -36,6 +36,7 @@ def get_data(filters):
 			sum(tsoi.base_net_rate * (tsoi.ordered_qty - coalesce(tpoi.received_qty,0))) open_orders_booked
 		from `tabSales Order Item` tsoi
 		inner join `tabSales Order` tso on tso.name = tsoi.parent and tsoi.parenttype = 'Sales Order'
+            and tso.status not in ('Cancelled', 'Closed')
 		inner join `tabPurchase Order Item` tpoi on tpoi.sales_order = tso.name
 			and tpoi.item_code = tsoi.item_code
    		inner join `tabPurchase Order` tpo on tpo.name = tpoi.parent 	
@@ -51,6 +52,7 @@ def get_data(filters):
 		left outer join `tabPurchase Receipt Item` tpri on tpri.parent = tpr.name
 			and tpri.item_code = tb.item and tpri.batch_no = tb.name  
 		left outer join `tabSales Order` tso on tso.name = tpri.sales_order_cf   
+            and tso.status not in ('Cancelled', 'Closed')
 		group by tso.customer		
 	) t2 on t2.customer = tc.name
         """, (get_default_company()),
