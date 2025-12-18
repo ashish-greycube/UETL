@@ -13,9 +13,9 @@ def execute(filters=None):
     data = data[:-1]
 
     if filters.get("sez_status") == "Pending":
-        data = [d for d in data if not d.custom_sez_file_attachment]
+        data = [d for d in data if d.is_pending_sez]
     elif filters.get("sez_status") == "Completed":
-        data = [d for d in data if d.custom_sez_file_attachment]
+        data = [d for d in data if not d.is_pending_sez]
 
     for d in data:
         d.billing_month = d.posting_date.strftime("%b")

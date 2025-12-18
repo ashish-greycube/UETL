@@ -4,7 +4,6 @@
 import frappe
 from uetl.uetl.report import csv_to_columns
 from erpnext import get_default_currency
-from erpnext.accounts.report.accounts_receivable_summary.accounts_receivable_summary import execute as ar_summary_execute
 
 
 def execute(filters=None):
@@ -15,11 +14,6 @@ def execute(filters=None):
 def get_data(filters):
 
     conditions = ""
-    if filters.get("sez_status") == "Pending":
-        conditions += " and tsi.custom_sez_file_attachment is null "
-    elif filters.get("sez_status") == "Completed":
-        conditions += " and tsi.custom_sez_file_attachment is not null "
-
     data = frappe.db.sql("""
 			select 
 				tsi.name sales_invoice, 
@@ -34,8 +28,7 @@ def get_data(filters):
 				tsu.insurance_cost , 
 				tsu.other_charges , 
 				tsu.fob_value , 
-				tsu.exchange_rate ,
-				case when nullif(tsi.custom_sez_file_attachment,'') is null then 1 else 0 end is_pending_sez
+				tsu.exchange_rate 
 			from `tabSales Invoice` tsi
 			left outer join `tabShipment UE` tsu on tsu.sales_invoice =  tsi.name
 			where tsi.posting_date between %(from_date)s and %(to_date)s {0}
@@ -56,11 +49,10 @@ def get_columns(filters):
  	DBK Value,dbk_value,Currency,,130 
 	RODTEP Value,rodtep_value,Currency,,130 
 	Freight Cost,freight_cost,Currency,,130 
-	Insurancs Cost,insurance_cost,Currency,,130 
+	Insurance Cost,insurance_cost,Currency,,130 
 	Other Charges,other_charges,Currency,,130 
 	FOB Value,fob_value,Currency,,130 
 	Exchange Rate,exchange_rate,Currency,,130
-	SEZ Pending,is_pending_sez,Check,,130
  """
     columns = csv_to_columns(columns)
 

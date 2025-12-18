@@ -135,7 +135,7 @@ def get_entries(filters):
             tc.custom_customer_group_company ,
             tc.custom_tier ,
             tb.custom_parent_make ,
-            dt.custom_sez_file_attachment
+            case when nullif(dt.custom_sez_file_attachment,'') is null then 1 else 0 end is_pending_sez
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 

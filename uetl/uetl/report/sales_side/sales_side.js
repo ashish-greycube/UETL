@@ -21,7 +21,7 @@ frappe.query_reports["Sales Side"] = {
       fieldname: "from_date",
       label: __("From Date"),
       fieldtype: "Date",
-      default: frappe.defaults.get_user_default("year_start_date"),
+      default: frappe.defaults.get_global_default("year_start_date"),
     },
     {
       fieldname: "to_date",
@@ -82,4 +82,15 @@ frappe.query_reports["Sales Side"] = {
       options: "All\nPending\nCompleted"
     },
   ],
+
+  onload: function () {
+    let fiscal_year = erpnext.utils.get_fiscal_year(frappe.datetime.get_today());
+
+    frappe.model.with_doc("Fiscal Year", fiscal_year, function (r) {
+      var fy = frappe.model.get_doc("Fiscal Year", fiscal_year);
+      frappe.query_report.set_filter_value({
+        from_date: fy.year_start_date,
+      });
+    });
+  },
 };

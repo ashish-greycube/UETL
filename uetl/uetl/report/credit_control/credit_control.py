@@ -64,8 +64,10 @@ def get_data(filters):
             d["total_outstanding"] = summary.outstanding or 0
             d["total_amount_due"] = summary.total_due or 0
             d["available_limit"] = (
-                (d.credit_limit or 0) - (d.total_outstanding or 0) - (d.open_orders or 0))
-
+                (d.credit_limit or 0)
+                - (d.open_orders or 0)
+                - max(d.total_outstanding or 0, 0)
+            )
     return data
 
 
