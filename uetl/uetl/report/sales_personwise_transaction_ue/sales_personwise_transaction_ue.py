@@ -48,7 +48,7 @@ def get_entries(filters):
         entries = frappe.db.sql(
             """
                 SELECT
-                    dt.name, dt.customer, dt.territory, dt.transaction_date as posting_date, dt_item.item_code,
+                    dt.name, dt.customer, tc.territory, dt.transaction_date as posting_date, dt_item.item_code,
                     st.sales_person, st.allocated_percentage, dt_item.warehouse,
                 CASE
                         WHEN dt.status = "Closed" THEN dt_item.delivered_qty * dt_item.conversion_factor
@@ -104,7 +104,7 @@ def get_entries(filters):
         entries = frappe.db.sql(
             """
             SELECT
-                dt.name, dt.customer, dt.territory, dt.%s as posting_date, dt_item.item_code,
+                dt.name, dt.customer, tc.territory, dt.%s as posting_date, dt_item.item_code,
                 st.sales_person, st.allocated_percentage, dt_item.warehouse,
             CASE
                 WHEN dt.status = "Closed" THEN dt_item.%s * dt_item.conversion_factor
