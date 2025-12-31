@@ -243,8 +243,8 @@ def get_conditions(filters):
 
     filters["from_date"] = "2025-01-01" # hardcoding as of now to expan the date range
     filters["to_date"] = today()
-	conditions.append(
-		"tso.transaction_date between %(from_date)s and %(to_date)s ")
+		conditions.append(
+			"tso.transaction_date between %(from_date)s and %(to_date)s ")
 
     return conditions and " and " + " and ".join(conditions) or ""
 
