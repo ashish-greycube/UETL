@@ -70,7 +70,7 @@ def get_data(filters=None):
             tst.sales_person sales_tracked_to ,
             tc.customer_group customer_group ,
             tc.industry industry,
-            tso.territory territory ,
+            tc.territory territory ,
             tccp.parent_cost_center , tccgp.parent_cost_center grand_parent_cost_center ,  
             tsp.parent_sales_person , tspp.parent_sales_person grand_parent_sales_person , 
             tbr.unified_product_group_cf ,
@@ -397,7 +397,7 @@ from
     tsp.parent_sales_person , 
     tspp.parent_sales_person grand_parent_sales_person , 
     tc.customer_group ,
-    tso.territory ,
+    tc.territory ,
     tc.industry ,
     tso.payment_terms_template ,
             -- custom columns from Customer
