@@ -241,10 +241,10 @@ def get_conditions(filters):
     if filters.get("mr_date") == "Today":
         conditions.append("tpri.posting_date = %s" % today())
 
-    filters["from_date"] = "2025-01-01"
-    filters["to_date"] = today()
-    conditions.append(
-        "tso.transaction_date between %(from_date)s and %(to_date)s ")
+    # filters["from_date"] = get_fiscal_year()["year_start_date"]
+    # filters["to_date"] = today()
+    # conditions.append(
+    #     "tso.transaction_date between %(from_date)s and %(to_date)s ")
 
     return conditions and " and " + " and ".join(conditions) or ""
 

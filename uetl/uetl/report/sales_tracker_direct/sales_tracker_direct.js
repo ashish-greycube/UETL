@@ -8,7 +8,7 @@ frappe.query_reports["Sales Tracker Direct"] = {
       label: "Show Summary",
       fieldname: "hide_group_fields",
       fieldtype: "Check",
-      default: 0,
+      default: 1,
     },
     {
       label: "Sales Order Status",
