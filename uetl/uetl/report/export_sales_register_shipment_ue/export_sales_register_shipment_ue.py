@@ -52,7 +52,7 @@ def get_columns(filters):
 	Shipping Bill Date,shipping_bill_date,Date,,130 
 	Port of Loading,port_of_loading,Data,,180 
 	BL No,bl_no,Data,,180
-	Net Total (Export Currenct),net_total,Float,,130
+	Net Total (Export Currency),net_total,Float,,130
 	Net Total (INR),base_net_total,Float,,130
 	Total Quantity,total_qty,Int,,130 
  	DBK Value,dbk_value,Currency,,130 
