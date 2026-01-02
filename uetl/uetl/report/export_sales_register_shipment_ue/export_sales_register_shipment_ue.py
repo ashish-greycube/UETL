@@ -13,7 +13,7 @@ def execute(filters=None):
 
 def get_data(filters):
 
-    conditions = ""
+    conditions = " and tsi.gst_category = 'Overseas' "
     data = frappe.db.sql("""
 			select 
 				tsi.name sales_invoice, 
@@ -28,7 +28,13 @@ def get_data(filters):
 				tsu.insurance_cost , 
 				tsu.other_charges , 
 				tsu.fob_value , 
-				tsu.exchange_rate 
+				tsu.exchange_rate ,
+				tsu.merchant_export ,
+				tsu.supplier_invoice_no ,
+				tsu.port_of_discharge ,
+				tsi.total_qty ,
+				base_net_total ,
+     			net_total 
 			from `tabSales Invoice` tsi
 			left outer join `tabShipment UE` tsu on tsu.sales_invoice =  tsi.name
 			where tsi.posting_date between %(from_date)s and %(to_date)s {0}
@@ -41,11 +47,14 @@ def get_columns(filters):
     columns = """
     Sales Invoice,sales_invoice,Link/Sales Invoice,,180
     Customer,customer,Link/Customer,,300
-	invoice Date,posting_date,Date,,120
+	Invoice Date,posting_date,Date,,120
 	Shipping Bill No,shipping_bill_no,Data,,180 
 	Shipping Bill Date,shipping_bill_date,Date,,130 
 	Port of Loading,port_of_loading,Data,,180 
 	BL No,bl_no,Data,,180
+	Net Total (Export Currenct),net_total,Float,,130
+	Net Total (INR),base_net_total,Float,,130
+	Total Quantity,total_qty,Int,,130 
  	DBK Value,dbk_value,Currency,,130 
 	RODTEP Value,rodtep_value,Currency,,130 
 	Freight Cost,freight_cost,Currency,,130 
@@ -53,7 +62,10 @@ def get_columns(filters):
 	Other Charges,other_charges,Currency,,130 
 	FOB Value,fob_value,Currency,,130 
 	Exchange Rate,exchange_rate,Currency,,130
- """
+	Merchant Export,merchant_export,Data,,120
+	Supplier Invoice No,supplier_invoice_no,Data,,130
+	Port Of Discharge,port_of_discharge,Data,,130
+	"""
     columns = csv_to_columns(columns)
 
     return columns

@@ -7,7 +7,7 @@ frappe.query_reports["Export Sales Register Shipment UE"] = {
 			fieldname: "from_date",
 			label: __("From Date"),
 			fieldtype: "Date",
-			default: frappe.datetime.month_start(),
+			default: erpnext.utils.get_fiscal_year(frappe.datetime.get_today(), true)[1],
 			reqd: 1,
 			width: "60px",
 		},
