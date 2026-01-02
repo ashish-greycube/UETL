@@ -85,7 +85,7 @@ def get_entries(filters):
                 inner join `tabItem` ti on ti.name = dt_item.item_code
                 inner join `tabSales Team` st on st.parent = dt.name and st.parenttype = 'Sales Order'    
                 inner join tabCustomer tc on tc.name = dt.customer
-                left outer join tabBrand tb on tb.name = dt_item.brand 
+                left outer join tabBrand tb on tb.name = ti.brand 
                 -- left outer join `tabSales Invoice Item` tsii on tsii.sales_order = dt.name and tsii.so_detail = dt_item.name
                 -- left outer join `tabSales Invoice` tsi on tsi.name = tsii.parent
                 left outer join `tabSales Person` rsm on rsm.name = (select parent_sales_person from `tabSales Person` x where x.name = st.sales_person)
@@ -119,7 +119,7 @@ def get_entries(filters):
                 WHEN dt.status = "Closed" THEN ((dt_item.base_net_rate * dt_item.%s * dt_item.conversion_factor) * st.allocated_percentage/100)
                 ELSE dt_item.base_net_amount * st.allocated_percentage/100
             END as contribution_amt ,
-            dt.ewaybill , dt.irn , dt_item.sales_order , dt_item.so_detail , dt_item.brand ,
+            dt.ewaybill , dt.irn , dt_item.sales_order , dt_item.so_detail , ti.brand ,
             dt.contact_display , dt.po_no , dt.po_date , tsoi.external_part_no_cf , dt_item.item_name , 
             tb.unified_product_group_cf , dt.status , rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
             dt.customer_group , tsoi.business_type_cf , tsoi.cost_center , tcc.parent_cost_center , 
@@ -141,11 +141,12 @@ def get_entries(filters):
             FROM
                 `tabSales Invoice` dt 
                 inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 
+                inner join `tabItem` ti on ti.name = dt_item.item_code
                 inner join `tabSales Team` st on st.parent = dt.name and st.parenttype = 'Sales Invoice'
                 inner join tabCustomer tc on tc.name = dt.customer
                 left outer join `tabSales Order Item` tsoi on tsoi.parent = dt_item.sales_order and tsoi.name = dt_item.so_detail 
                 left outer join `tabSales Order` tso on tso.name = tsoi.parent
-                left outer join tabBrand tb on tb.name = dt_item.brand 
+                left outer join tabBrand tb on tb.name = ti.brand 
                 left outer join `tabSales Person` rsm on rsm.name = (select parent_sales_person from `tabSales Person` x where x.name = st.sales_person)
                 left outer join `tabSales Person` bu on bu.name = (select parent_sales_person from `tabSales Person` x where x.name = rsm.name)
                 left outer join `tabCost Center` tcc on tcc.name = tsoi.cost_center  
