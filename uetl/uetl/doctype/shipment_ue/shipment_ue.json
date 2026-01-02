@@ -28,24 +28,31 @@
   {
    "fieldname": "sales_invoice",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Sales Invoice",
+   "link_filters": "[[\"Sales Invoice\",\"gst_category\",\"=\",\"Overseas\"]]",
    "options": "Sales Invoice"
   },
   {
    "fetch_from": "sales_invoice.customer",
    "fieldname": "customer",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Customer",
    "options": "Customer"
   },
   {
    "fieldname": "shipping_bill_no",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Shipping Bill No"
   },
   {
    "fieldname": "shipping_bill_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Shipping Bill Date"
   },
   {
@@ -106,24 +113,28 @@
   {
    "fieldname": "merchant_export",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Merchant Export",
    "options": "Yes\nNo"
   },
   {
    "fieldname": "supplier_invoice_no",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Supplier Invoice No"
   },
   {
    "fieldname": "port_of_discharge",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Port of Discharge"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-02 06:24:30.426856",
+ "modified": "2026-01-02 08:52:26.046631",
  "modified_by": "Administrator",
  "module": "UETL",
  "name": "Shipment UE",
