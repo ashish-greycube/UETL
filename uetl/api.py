@@ -3,6 +3,39 @@ from frappe.utils.csvutils import build_csv_response
 from uetl.uetl.report.sales_tracker_direct.sales_tracker_direct import execute
 from frappe.desk.search import search_link
 from frappe.utils.csvutils import send_csv_to_client
+from frappe.desk.query_report import run, get_report_result, get_report_doc, generate_report_result, validate_filters_permissions
+from frappe.utils import sbool
+from frappe import _
+from werkzeug.wrappers import Response
+
+from frappe.utils.user import add_role
+
+
+@frappe.whitelist(allow_guest=False)
+@frappe.read_only()
+def get_report_as_csv(**filters):
+    # call api (/api/method/get_report_as_csv) with parameters in json body
+    # e.g. { "report_name": "Sales Personwise Transaction UE", "company": "Unified Electro Tech Pvt Ltd", "customer": "Quadrant Future Tek Limited", "doc_type": "Sales Invoice", "from_date": "2023-04-01", "sales_person": "Yogesh Baghel", "territory": "East", "to_date": "2025-04-07" }
+
+    report_name = frappe.form_dict.report_name
+
+    if not report_name:
+        frappe.response.message = "Invalid or missing report name parameter"
+    else:
+        # The api user is set with no permissions.
+        # Read Only impersonate Administrator, so no other permissions required for user
+        frappe.local.login_manager.impersonate("Administrator")
+
+        report_result = run(report_name, frappe.form_dict or {
+        }, ignore_prepared_report=True)
+
+        # make csv out of columns and data from report execute result
+        columns, data = report_result["columns"], report_result["result"]
+
+        fieldnames = [d.get("fieldname") or d.get("label") for d in columns]
+        csv = [[d.get("label") for d in columns]] + to_list(data, fieldnames)
+
+        build_csv_response(data=csv, filename=report_name)
 
 
 @frappe.whitelist(allow_guest=False)
@@ -57,40 +90,15 @@ def get_sales_tracker_filter(field_name):
         return frappe.response.get("results")
 
 
-@frappe.whitelist(allow_guest=False)
-def get_report_as_csv(**filters):
-    # call api (/api/method/get_report_as_csv) with parameters in json body
-    # e.g. { "report_name": "Sales Personwise Transaction UE", "company": "Unified Electro Tech Pvt Ltd", "customer": "Quadrant Future Tek Limited", "doc_type": "Sales Invoice", "from_date": "2023-04-01", "sales_person": "Yogesh Baghel", "territory": "East", "to_date": "2025-04-07" }
-
-    def to_list(data, fieldnames):
-        # return list of lists from list of dicts
-        return [
-            [d.get(f) or "" for f in fieldnames] for d in data if isinstance(d, dict)
-        ]
-
-    report_name = frappe.form_dict.report_name
-
-    if not report_name:
-        frappe.response.message = "Invalid or missing report name parameter"
-    else:
-        report = frappe.get_doc("Report", report_name)
-        filters = frappe.form_dict or {}
-
-        result = report.execute_script_report(filters)
-        columns = result[0]
-        data = result[1]
-        # frappe.response["message"] = [columns , data]
-
-        # make csv out of columns and data from report execute result
-        fieldnames = [d.get("fieldname") for d in columns]
-        csv = [[d.get("label") for d in columns]] + to_list(data, fieldnames)
-
-        build_csv_response(data=csv, filename=report_name)
+def to_list(data, fieldnames):
+    # return list of lists from list of dicts
+    return [
+        isinstance(d, dict) and [d.get(f) or "" for f in fieldnames] or d for d in data
+    ]
 
 
 @frappe.whitelist(allow_guest=False)
 def get_report_filter(field_name, report_name=None, party_type=None):
-
     """
     return filter values for fieldname to match desk report filters
     Note: for Party link field for customer, pass in {"field_name":"party", "party_type":"Customer"} """
@@ -104,7 +112,7 @@ def get_report_filter(field_name, report_name=None, party_type=None):
     if frappe.db.exists("DocType", frappe.unscrub(field_name)):
         return frappe.call(
             "frappe.desk.search.search_link",
-            doctype= frappe.unscrub(field_name),
+            doctype=frappe.unscrub(field_name),
             txt="",
             ignore_user_permissions=True,
             page_length=1000,
