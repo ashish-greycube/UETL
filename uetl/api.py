@@ -16,6 +16,7 @@ from frappe.utils.user import add_role
 def get_report_as_csv(**filters):
     # call api (/api/method/get_report_as_csv) with parameters in json body
     # e.g. { "report_name": "Sales Personwise Transaction UE", "company": "Unified Electro Tech Pvt Ltd", "customer": "Quadrant Future Tek Limited", "doc_type": "Sales Invoice", "from_date": "2023-04-01", "sales_person": "Yogesh Baghel", "territory": "East", "to_date": "2025-04-07" }
+    frappe.only_for("System Manager")
 
     report_name = frappe.form_dict.report_name
 
