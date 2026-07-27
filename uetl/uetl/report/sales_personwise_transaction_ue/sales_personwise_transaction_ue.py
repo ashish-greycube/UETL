@@ -4,11 +4,14 @@
 import frappe
 from frappe import _
 from erpnext.selling.report.sales_person_wise_transaction_summary.sales_person_wise_transaction_summary import (
-    get_conditions,
+    get_items
 )
 from erpnext import get_company_currency
 from uetl.uetl.report import csv_to_columns
 import json
+from frappe.desk.reportview import build_match_conditions
+from frappe.query_builder import Case, Criterion
+from pypika.terms import LiteralValue
 
 
 def execute(filters=None):
@@ -24,160 +27,6 @@ def execute(filters=None):
         data.append(total_row)
 
     return columns, data
-
-
-def get_entries(filters):
-    date_field = (
-        filters["doc_type"] == "Sales Order" and "transaction_date" or "posting_date"
-    )
-    if filters["doc_type"] == "Sales Order":
-        qty_field = "delivered_qty"
-    else:
-        qty_field = "qty"
-    conditions, values = get_conditions(filters, date_field)
-
-    if filters.get("show_return_entries", 0):
-        conditions = (
-            conditions
-            + " and (dt_item.stock_qty > 0 or (dt.status = 'Closed' and dt_item.{} > 0))".format(
-                qty_field
-            )
-        )
-
-    if filters["doc_type"] == "Sales Order":
-        entries = frappe.db.sql(
-            """
-                SELECT
-                    dt.name, dt.customer, tc.territory, dt.transaction_date as posting_date, dt_item.item_code,
-                    st.sales_person, st.allocated_percentage, dt_item.warehouse,
-                CASE
-                        WHEN dt.status = "Closed" THEN dt_item.delivered_qty * dt_item.conversion_factor
-                        ELSE dt_item.stock_qty
-                END as stock_qty,
-                CASE
-                        WHEN dt.status = "Closed" THEN (dt_item.base_net_rate * dt_item.delivered_qty * dt_item.conversion_factor)
-                        ELSE dt_item.base_net_amount
-                END as base_net_amount,
-                dt_item.base_net_rate ,
-                CASE
-                        WHEN dt.status = "Closed" THEN ((dt_item.base_net_rate * dt_item.delivered_qty * dt_item.conversion_factor) * st.allocated_percentage/100)
-                        ELSE dt_item.base_net_amount * st.allocated_percentage/100
-                END as contribution_amt ,
-                dt.customer , dt.contact_display , dt.po_no , dt.po_date , dt_item.external_part_no_cf , 
-                dt_item.item_name , dt_item.item_group , ti.brand , tb.unified_product_group_cf , dt.status so_status ,
-                tc.industry , tc.customer_group , dt.delivery_status , dt.billing_status ,
-                -- tsi.name sales_invoice , tsi.posting_date sales_invoice_date ,
-                rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
-                dt_item.business_type_cf , dt_item.cost_center , tcc.parent_cost_center , tcc_gp.parent_cost_center g_parent_cost_center ,
-                dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf ,
-            -- custom columns from Customer
-            tc.custom_line_of_business , 
-            tc.custom_potential , 
-            tc.parent_customer_name_cf ,
-            tc.customer_id_cf ,
-            tc.custom_customer_group_company ,
-            tc.custom_tier ,
-            tb.custom_parent_make ,
-            tc.gst_category
-            FROM                                                                                                                  
-                `tabSales Order` dt
-                inner join `tabSales Order Item` dt_item on dt_item.parent = dt.name
-                inner join `tabItem` ti on ti.name = dt_item.item_code
-                inner join `tabSales Team` st on st.parent = dt.name and st.parenttype = 'Sales Order'    
-                inner join tabCustomer tc on tc.name = dt.customer
-                left outer join tabBrand tb on tb.name = ti.brand 
-                -- left outer join `tabSales Invoice Item` tsii on tsii.sales_order = dt.name and tsii.so_detail = dt_item.name
-                -- left outer join `tabSales Invoice` tsi on tsi.name = tsii.parent
-                left outer join `tabSales Person` rsm on rsm.name = (select parent_sales_person from `tabSales Person` x where x.name = st.sales_person)
-                left outer join `tabSales Person` bu on bu.name = (select parent_sales_person from `tabSales Person` x where x.name = rsm.name)                
-                left outer join `tabCost Center` tcc on tcc.name = dt_item.cost_center  
-                left outer join `tabCost Center` tcc_gp on tcc_gp.name = tcc.parent_cost_center  
-            WHERE dt.docstatus = 1 %s
-            order by st.sales_person, dt.name desc
-            """
-            % (conditions,),
-            tuple(values),
-            as_dict=1,
-            # debug=1,
-        )
-    else:
-        entries = frappe.db.sql(
-            """
-            SELECT
-                dt.name, dt.customer, tc.territory, dt.%s as posting_date, dt_item.item_code,
-                st.sales_person, st.allocated_percentage, dt_item.warehouse,
-            CASE
-                WHEN dt.status = "Closed" THEN dt_item.%s * dt_item.conversion_factor
-                ELSE dt_item.stock_qty
-            END as stock_qty,
-            CASE
-                WHEN dt.status = "Closed" THEN (dt_item.base_net_rate * dt_item.%s * dt_item.conversion_factor)
-                ELSE dt_item.base_net_amount
-            END as base_net_amount,
-            dt_item.base_net_rate ,
-            CASE
-                WHEN dt.status = "Closed" THEN ((dt_item.base_net_rate * dt_item.%s * dt_item.conversion_factor) * st.allocated_percentage/100)
-                ELSE dt_item.base_net_amount * st.allocated_percentage/100
-            END as contribution_amt ,
-            dt.ewaybill , dt.irn , dt_item.sales_order , dt_item.so_detail , ti.brand ,
-            dt.contact_display , dt.po_no , dt.po_date , tsoi.external_part_no_cf , dt_item.item_name , 
-            tb.unified_product_group_cf , dt.status , rsm.sales_person_name rsm_sales_person , bu.sales_person_name bu_sales_person ,
-            dt.customer_group , tsoi.business_type_cf , tsoi.cost_center , tcc.parent_cost_center , 
-            tcc_gp.parent_cost_center g_parent_cost_center , dt_item.item_group , tc.industry , 
-            DATE(tsoi.creation) so_date , tsoi.delivery_date tsoi_delivery_date ,
-            dt.account_manager_cf , dt.reporting_manager_cf , dt.customer_support_cf ,
-            dt_item.batch_no , dt_item.batch_no , dt.payment_terms_template , dt_item.uom ,tsoi.purchaser_cf , 
-            tso.delivery_date , ta.country ,
-            -- custom columns from Customer
-            tc.custom_line_of_business , 
-            tc.custom_potential , 
-            tc.parent_customer_name_cf ,
-            tc.customer_id_cf ,
-            tc.custom_customer_group_company ,
-            tc.custom_tier ,
-            tb.custom_parent_make ,
-            case when nullif(dt.custom_sez_file_attachment,'') is null then 1 else 0 end is_pending_sez ,
-            tc.gst_category
-            FROM
-                `tabSales Invoice` dt 
-                inner join `tabSales Invoice Item` dt_item on dt_item.parent = dt.name 
-                inner join `tabItem` ti on ti.name = dt_item.item_code
-                inner join `tabSales Team` st on st.parent = dt.name and st.parenttype = 'Sales Invoice'
-                inner join tabCustomer tc on tc.name = dt.customer
-                left outer join `tabSales Order Item` tsoi on tsoi.parent = dt_item.sales_order and tsoi.name = dt_item.so_detail 
-                left outer join `tabSales Order` tso on tso.name = tsoi.parent
-                left outer join tabBrand tb on tb.name = ti.brand 
-                left outer join `tabSales Person` rsm on rsm.name = (select parent_sales_person from `tabSales Person` x where x.name = st.sales_person)
-                left outer join `tabSales Person` bu on bu.name = (select parent_sales_person from `tabSales Person` x where x.name = rsm.name)
-                left outer join `tabCost Center` tcc on tcc.name = tsoi.cost_center  
-                left outer join `tabCost Center` tcc_gp on tcc_gp.name = tcc.parent_cost_center  
-                left outer join tabAddress ta on ta.name = dt.customer_address
-            WHERE
-                dt.docstatus = 1 %s order by st.sales_person, dt.name desc
-            """
-            % (
-                date_field,
-                qty_field,
-                qty_field,
-                qty_field,
-                conditions,
-            ),
-            tuple(values),
-            as_dict=1,
-            # debug=1,
-        )
-
-    if filters.get("cost_center"):
-        cc = filters.get("cost_center")
-        entries = [
-            d
-            for d in entries
-            if cc == d.cost_center
-            or cc == d.parent_cost_center
-            or cc == d.g_parent_cost_center
-        ]
-
-    return entries
 
 
 def get_columns(filters):
@@ -266,3 +115,224 @@ Customer ID,customer_id_cf,Data,,140
 Customer Group Company,custom_customer_group_company,Data,,140
 Tier,custom_tier,Data,,140        
 """)
+
+def get_entries(filters):
+	doc_type = filters["doc_type"]
+	is_so = doc_type == "Sales Order"
+
+	date_field = "transaction_date" if is_so else "posting_date"
+	qty_field = "delivered_qty" if is_so else "qty"
+
+	dt = frappe.qb.DocType(doc_type)
+	dt_item = frappe.qb.DocType(f"{doc_type} Item")
+	st = frappe.qb.DocType("Sales Team")
+	ti = frappe.qb.DocType("Item")
+	tb = frappe.qb.DocType("Brand")
+	tc = frappe.qb.DocType("Customer")
+	tcc = frappe.qb.DocType("Cost Center").as_("tcc")
+	tcc_gp = frappe.qb.DocType("Cost Center").as_("tcc_gp")
+	rsm = frappe.qb.DocType("Sales Person").as_("rsm")
+	bu = frappe.qb.DocType("Sales Person").as_("bu")
+	sp_lookup = frappe.qb.DocType("Sales Person")  # used only inside subqueries below
+
+	# SI-only tables
+	if not is_so:
+		tsoi = frappe.qb.DocType("Sales Order Item").as_("tsoi")
+		tso = frappe.qb.DocType("Sales Order").as_("tso")
+		ta = frappe.qb.DocType("Address").as_("ta")
+
+	# --- conditional/calculated columns -------------------------------------------------
+	calc_qty = dt_item[qty_field] * dt_item.conversion_factor
+	calc_net_amount = dt_item.base_net_rate * calc_qty
+
+	stock_qty_case = Case().when(dt.status == "Closed", calc_qty).else_(dt_item.stock_qty).as_("stock_qty")
+
+	base_net_amount_case = (
+		Case()
+		.when(dt.status == "Closed", calc_net_amount)
+		.else_(dt_item.base_net_amount)
+		.as_("base_net_amount")
+	)
+
+	contribution_amt_case = (
+		Case()
+		.when(dt.status == "Closed", (calc_net_amount * st.allocated_percentage / 100))
+		.else_(dt_item.base_net_amount * st.allocated_percentage / 100)
+		.as_("contribution_amt")
+	)
+
+	status_alias = "so_status" if is_so else "status"
+
+	doc_filters = {"docstatus": 1}
+	for field in ["company", "customer", "territory"]:
+		if filters.get(field):
+			doc_filters[field] = filters.get(field)
+
+	if filters.get("from_date") and filters.get("to_date"):
+		doc_filters[date_field] = ["between", [filters.get("from_date"), filters.get("to_date")]]
+	elif filters.get("from_date"):
+		doc_filters[date_field] = [">=", filters.get("from_date")]
+	elif filters.get("to_date"):
+		doc_filters[date_field] = ["<=", filters.get("to_date")]
+
+	rsm_parent_sq = (
+		frappe.qb.from_(sp_lookup)
+		.select(sp_lookup.parent_sales_person)
+		.where(sp_lookup.name == st.sales_person)
+	)
+	bu_parent_sq = (
+		frappe.qb.from_(sp_lookup)
+		.select(sp_lookup.parent_sales_person)
+		.where(sp_lookup.name == rsm.name)
+	)
+
+	query = (
+		frappe.get_query(dt, filters=doc_filters)
+		.join(dt_item)
+		.on(dt.name == dt_item.parent)
+		.join(st)
+		.on(dt.name == st.parent)
+		.join(ti)
+		.on(ti.name == dt_item.item_code)
+		.join(tc)
+		.on(tc.name == dt.customer)
+		.left_join(tb)
+		.on(tb.name == ti.brand)
+		.left_join(rsm)
+		.on(rsm.name == rsm_parent_sq)
+		.left_join(bu)
+		.on(bu.name == bu_parent_sq)
+		.where(st.parenttype == doc_type)
+	)
+
+	# cost-center source differs: SO uses dt_item directly, SI uses tsoi
+	if is_so:
+		query = (
+			query.left_join(tcc)
+			.on(tcc.name == dt_item.cost_center)
+			.left_join(tcc_gp)
+			.on(tcc_gp.name == tcc.parent_cost_center)
+		)
+	else:
+		query = (
+			query.left_join(tsoi)
+			.on((tsoi.parent == dt_item.sales_order) & (tsoi.name == dt_item.so_detail))
+			.left_join(tso)
+			.on(tso.name == tsoi.parent)
+			.left_join(ta)
+			.on(ta.name == dt.customer_address)
+			.left_join(tcc)
+			.on(tcc.name == tsoi.cost_center)
+			.left_join(tcc_gp)
+			.on(tcc_gp.name == tcc.parent_cost_center)
+		)
+
+	query = query.select(
+		dt.name,
+		dt.customer,
+		tc.territory,  
+		dt[date_field].as_("posting_date"),
+		dt_item.item_code,
+		st.sales_person,
+		st.allocated_percentage,
+		dt_item.warehouse,
+		stock_qty_case,
+		base_net_amount_case,
+		dt_item.base_net_rate,
+		contribution_amt_case,
+		dt.contact_display,
+		dt.po_no,
+		dt.po_date,
+		dt_item.item_name,
+		ti.brand,
+		tb.unified_product_group_cf,
+		tb.custom_parent_make,
+		dt.status.as_(status_alias),
+		rsm.sales_person_name.as_("rsm_sales_person"),
+		bu.sales_person_name.as_("bu_sales_person"),
+		tcc.parent_cost_center,
+		tcc_gp.parent_cost_center.as_("g_parent_cost_center"),
+		dt.account_manager_cf,
+		dt.reporting_manager_cf,
+		dt.customer_support_cf,
+		tc.industry,
+		tc.customer_group,
+		tc.custom_line_of_business,
+		tc.custom_potential,
+		tc.parent_customer_name_cf,
+		tc.customer_id_cf,
+		tc.custom_customer_group_company,
+		tc.custom_tier,
+		tc.gst_category,
+	)
+
+	if is_so:
+		query = query.select(
+			dt_item.external_part_no_cf,
+			dt_item.item_group,
+			dt.delivery_status,
+			dt.billing_status,
+			dt_item.business_type_cf,
+			dt_item.cost_center,
+		)
+	else:
+		is_pending_sez_case = (
+			Case()
+			.when(LiteralValue("nullif(custom_sez_file_attachment,'') is null"), 1)
+			.else_(0)
+			.as_("is_pending_sez")
+		)
+		query = query.select(
+			dt.ewaybill,
+			dt.irn,
+			dt_item.sales_order,
+			dt_item.so_detail,
+			tsoi.external_part_no_cf,
+			dt_item.item_group,
+			tsoi.creation.as_("so_date"),
+			tsoi.delivery_date.as_("tsoi_delivery_date"),
+			dt_item.batch_no,
+			dt.payment_terms_template,
+			dt_item.uom,
+			tsoi.purchaser_cf,
+			tso.delivery_date,
+			ta.country,
+			is_pending_sez_case,
+			tsoi.business_type_cf,
+			tsoi.cost_center,
+		)
+
+	if filters.get("sales_person"):
+		lft, rgt = frappe.db.get_value("Sales Person", filters.get("sales_person"), ["lft", "rgt"])
+		sp = frappe.qb.DocType("Sales Person")
+		query = query.where(
+			st.sales_person.isin(frappe.qb.from_(sp).select(sp.name).where((sp.lft >= lft) & (sp.rgt <= rgt)))
+		)
+
+	# only resolve items when an item_group/brand filter is set; otherwise get_items
+	# would return every item in the system and add a huge IN() clause on each run
+	if filters.get("item_group") or filters.get("brand"):
+		items = get_items(filters)
+		if not items:
+			return []
+		query = query.where(dt_item.item_code.isin([d[0] for d in items]))
+
+	query = query.orderby(st.sales_person).orderby(dt.name, order=frappe.qb.desc)
+
+	match_conditions = build_match_conditions(doc_type)
+	if match_conditions:
+		query = query.where(LiteralValue(match_conditions))
+
+	entries = query.run(as_dict=True)
+
+	if filters.get("cost_center"):
+		cc = filters.get("cost_center")
+		entries = [
+			d
+			for d in entries
+			if cc == d.cost_center
+			or cc == d.parent_cost_center
+			or cc == d.g_parent_cost_center
+		]
+
+	return entries
