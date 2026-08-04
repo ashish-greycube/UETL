@@ -22,6 +22,8 @@ def validate_for_duplicate_items_based_on_date(self, method):
 
 
 def validate_so_reference_in_item(self, method):
+    frappe.throw(f"Subcontracted Value: {self.is_subcontracted}")
+
     if self.is_subcontracted:
         return
         
