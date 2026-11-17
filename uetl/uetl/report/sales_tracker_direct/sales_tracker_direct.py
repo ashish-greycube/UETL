@@ -432,7 +432,7 @@ left outer join (
         sum(tpoi.received_qty) received_qty, 
         sum(tpoi.stock_qty) stock_qty ,
         min(tpoi.expected_delivery_date) earliest_eda,
-        max(tpoi.expected_delivery_date) custom_purchaser_remarks 
+        max(tpoi.custom_purchaser_remarks) custom_purchaser_remarks 
         from  `tabPurchase Order` tpo
         inner join `tabPurchase Order Item` tpoi on tpoi.parent = tpo.name
         where tpo.docstatus = 1
