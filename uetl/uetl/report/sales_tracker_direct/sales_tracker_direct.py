@@ -298,7 +298,7 @@ COLUMNS = [
     "Requested Ship Dt(CRD),requested_ship_date,Date,,150",
     "Confirmed Ship Dt(EDA),confirmed_ship_date,Date,,150",
     "Expected Delivery Date,earliest_eda,Date,,150",
-    "Farthest Ship Dt(EDA),farthest_eda,Date,,150",
+    "Farthest Ship Dt(EDA),custom_purchaser_remarks,Date,,150",
     "Special Remarks(Line Level),special_remarks,,,150",
     "Business Unit(Sourcing),tsoi_cost_center,,,150",
     "Purchaser,purchaser,,,150",
@@ -352,7 +352,7 @@ so.ordered_qty - coalesce(tpoi.received_qty,0) reserved_order_qty ,
 (so.ordered_qty - so.delivered_qty - tpoi.stock_qty + tpoi.received_qty) reserved_physical_qty ,
 base_net_rate * (ordered_qty - coalesce(received_qty,0)) reserved_order_amount ,
 base_net_rate * (so.ordered_qty - so.delivered_qty - tpoi.stock_qty + tpoi.received_qty) reserved_physical_amount ,
-tpoi.earliest_eda , tpoi.farthest_eda , 
+tpoi.earliest_eda , tpoi.custom_purchaser_remarks , 
 so.* 
 from 
 (      
@@ -432,7 +432,7 @@ left outer join (
         sum(tpoi.received_qty) received_qty, 
         sum(tpoi.stock_qty) stock_qty ,
         min(tpoi.expected_delivery_date) earliest_eda,
-        max(tpoi.expected_delivery_date) farthest_eda 
+        max(tpoi.expected_delivery_date) custom_purchaser_remarks 
         from  `tabPurchase Order` tpo
         inner join `tabPurchase Order Item` tpoi on tpoi.parent = tpo.name
         where tpo.docstatus = 1
@@ -464,7 +464,7 @@ SHOW_SUMMARY_COLUMNS = [
     "Pending Amt,pending_amount,Currency,,150",
     "Requested Ship Dt,requested_ship_date,Date,,150",
     "Expected Delivery Date,earliest_eda,Date,,150",
-    "Farthest Ship Dt,farthest_eda,Date,,150",
+    "Farthest Ship Dt,custom_purchaser_remarks,Date,,150",
     "Purchaser,purchaser,,,150",
     "Sourcing / PM,tsoi_cost_center,,,150",
     "Sales Person,sales_tracked_to,,,150",
